@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("ADMIN")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model News {
+  id           String   @id @default(uuid())
+  title        String
+  slug         String   @unique
+  content      String   @db.Text
+  excerpt      String?  @db.VarChar(255)
+  thumbnail    String?
+  cloudinaryId String?
+  category     String
+  status       NewsStatus @default(DRAFT)
+  views        Int      @default(0)
+  publishedAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+enum NewsStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model Gallery {
+  id           String   @id @default(uuid())
+  title        String
+  description  String?  @db.Text
+  imageUrl     String
+  cloudinaryId String?
+  category     String
+  isPublic     Boolean  @default(true)
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model PpdbRegistration {
+  id              String   @id @default(uuid())
+  noPendaftaran   String   @unique
+  namaLengkap     String
+  nisn            String
+  tempatLahir     String
+  tanggalLahir    DateTime
+  jenisKelamin    String
+  agama           String
+  alamatLengkap   String   @db.Text
+  asalSekolah     String
+  namaAyah        String
+  pekerjaanAyah   String
+  namaIbu         String
+  pekerjaanIbu    String
+  noHpOrtu        String
+  
+  // Documents
+  fotoUrl         String?
+  ijazahUrl       String?
+  kkUrl           String?
+  aktaUrl         String?
+
+  status          PpdbStatus @default(MENUNGGU)
+  catatan         String?    @db.Text
+  
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+}
+
+enum PpdbStatus {
+  MENUNGGU
+  DIVERIFIKASI
+  DITERIMA
+  DITOLAK
+  REVISI
+}
+
+model Consultation {
+  id          String   @id @default(uuid())
+  name        String
+  email       String
+  question    String   @db.Text
+  category    String?
+  isPublic    Boolean  @default(true)
+  isModerated Boolean  @default(false)
+  isHidden    Boolean  @default(false)
+  replies     ConsultationReply[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ConsultationReply {
+  id             String       @id @default(uuid())
+  consultationId String
+  consultation   Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  adminId        String?      // Reference to admin who replied
+  reply          String       @db.Text
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  title     String
+  content   String   @db.Text
+  priority  Int      @default(1) // 1-5
+  isActive  Boolean  @default(true)
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SiteSettings {
+  key       String   @id
+  value     Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  subject   String
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+}
