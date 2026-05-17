@@ -18,9 +18,6 @@ import SectionCard from '@/components/admin/SectionCard'
 import ImageUploadField from '@/components/admin/ImageUploadField'
 import { get, put } from '@/lib/api'
 import { toast } from 'sonner'
-import { db } from '@/lib/firebase'
-import { doc, setDoc } from 'firebase/firestore'
-
 // --- Interfaces ---
 
 interface PopupSettings {
@@ -93,13 +90,6 @@ export default function PopupSettingsPage() {
       
       const data = await res.json()
       if (data.success) {
-        // 2. Simpan ke Firestore untuk realtime settings
-        try {
-          await setDoc(doc(db, 'settings', 'popup_settings'), settings)
-        } catch (fsErr) {
-          console.error('Firestore save failed:', fsErr)
-        }
-
         setIsDirty(false)
         toast.success('Pengaturan Popup berhasil disimpan!')
       } else {
