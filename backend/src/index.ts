@@ -28,9 +28,17 @@ app.use(helmet());
 app.use(cors({
   origin: (origin: string | undefined, 
             callback: (err: Error | null, allow?: boolean) => void) => {
-    // allow all localhosts and FRONTEND_URL
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    if (!origin || /^http:\/\/localhost(:\d+)?$/.test(origin) || origin === frontendUrl) {
+    if (!origin) {
+      callback(null, true);
+      return;
+    }
+
+    const frontendUrl = process.env.FRONTEND_URL;
+    const isLocalhost = /^http:\/\/localhost(:\d+)?$/.test(origin);
+    const isVercelSubdomain = /\.vercel\.app$/.test(origin);
+    const isAllowedCustomDomain = frontendUrl && (origin === frontendUrl || origin.replace(/\/$/, '') === frontendUrl.replace(/\/$/, ''));
+
+    if (isLocalhost || isVercelSubdomain || isAllowedCustomDomain) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
