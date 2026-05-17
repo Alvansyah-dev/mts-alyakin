@@ -3,16 +3,14 @@ import multer from 'multer'
 import { verifyToken } from '../middleware/auth.middleware'
 import { uploadImage, deleteImage } from '../services/cloudinary.service'
 import * as fs from 'fs'
+import * as os from 'os'
 
 const router = Router()
 
-// Multer config - simpan ke temp dulu
+// Multer config - simpan ke folder temp OS (untuk mendukung serverless /tmp)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = 'uploads/temp'
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true })
-    }
+    const uploadDir = os.tmpdir()
     cb(null, uploadDir)
   },
   filename: (req, file, cb) => {
