@@ -10,6 +10,8 @@ import CTASection from '@/components/home/CTASection';
 import WhatsAppFloat from '@/components/ui/WhatsAppFloat';
 import { Metadata } from 'next';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'MTs Al-Yakin - Home',
   description: 'Selamat Datang di MTs Al-Yakin, sekolah Islam modern.',

@@ -12,7 +12,7 @@ const firebaseConfig = {
 };
 
 // Safe Firebase initialization
-const app = typeof window !== 'undefined' && firebaseConfig.apiKey 
+const app = typeof window !== 'undefined' && firebaseConfig.apiKey
   ? (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp())
   : null;
 
