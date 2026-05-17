@@ -90,6 +90,8 @@ interface HomePageSettings {
     subtitle: string
     buttonText: string
     url: string
+    backgroundImage?: string
+    photoTitle?: string
   }
   testimonials: {
     items: TestimonialItem[]
@@ -151,7 +153,9 @@ const DEFAULT_SETTINGS: HomePageSettings = {
     title: 'Galeri Sekolah',
     subtitle: 'Momen berharga dan aktivitas seru siswa MTs Al-Yakin.',
     buttonText: 'Lihat Semua Galeri',
-    url: '/galeri'
+    url: '/galeri',
+    backgroundImage: '',
+    photoTitle: ''
   },
   testimonials: {
     items: [
@@ -371,28 +375,44 @@ export default function HomeSettingsPage() {
         )
       case 'gallery':
         return (
-          <div className="p-6 space-y-4 bg-white h-full overflow-y-auto">
-            {!settings.gallery.showSection && (
-               <div className="absolute inset-0 bg-white/80 backdrop-blur-[2px] z-10 flex items-center justify-center">
-                 <div className="flex flex-col items-center gap-2 text-gray-400">
-                   <EyeOff className="w-8 h-8" />
-                   <span className="text-xs font-bold uppercase tracking-widest">Section Disembunyikan</span>
-                 </div>
-               </div>
+          <div 
+            className={`p-6 space-y-4 h-full overflow-y-auto relative flex flex-col justify-center ${
+              settings.gallery.backgroundImage 
+                ? 'text-white' 
+                : 'bg-white'
+            }`}
+            style={settings.gallery.backgroundImage ? {
+              backgroundImage: `url(${settings.gallery.backgroundImage})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            } : {}}
+          >
+            {settings.gallery.backgroundImage && (
+              <div className="absolute inset-0 bg-black/60 z-0" />
             )}
-            <div className="text-center space-y-1">
-              <h3 className="text-sm font-black text-gray-900">{settings.gallery.title}</h3>
-              <p className="text-[9px] text-gray-500 leading-relaxed">{settings.gallery.subtitle}</p>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-               {[1, 2, 3, 4, 5, 6].map(i => (
-                 <div key={i} className="aspect-square bg-gray-100 rounded-xl border border-gray-200" />
-               ))}
-            </div>
-            <div className="pt-2 text-center">
-               <div className="inline-block px-4 py-2 bg-green-600 text-white text-[9px] font-bold rounded-xl">
-                 {settings.gallery.buttonText}
-               </div>
+            <div className="relative z-10 space-y-4">
+              {!settings.gallery.showSection && (
+                 <div className="absolute inset-0 bg-white/80 backdrop-blur-[2px] z-10 flex items-center justify-center">
+                   <div className="flex flex-col items-center gap-2 text-gray-400">
+                     <EyeOff className="w-8 h-8" />
+                     <span className="text-xs font-bold uppercase tracking-widest">Section Disembunyikan</span>
+                   </div>
+                 </div>
+              )}
+              <div className="text-center space-y-1">
+                <h3 className={`text-sm font-black ${settings.gallery.backgroundImage ? 'text-white' : 'text-gray-900'}`}>{settings.gallery.title}</h3>
+                <p className={`text-[9px] ${settings.gallery.backgroundImage ? 'text-gray-200' : 'text-gray-500'} leading-relaxed`}>{settings.gallery.subtitle}</p>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                 {[1, 2, 3, 4, 5, 6].map(i => (
+                   <div key={i} className={`aspect-square rounded-xl border ${settings.gallery.backgroundImage ? 'bg-white/10 border-white/10' : 'bg-gray-100 border-gray-200'}`} />
+                 ))}
+              </div>
+              <div className="pt-2 text-center">
+                 <div className="inline-block px-4 py-2 bg-green-600 text-white text-[9px] font-bold rounded-xl">
+                   {settings.gallery.buttonText}
+                 </div>
+              </div>
             </div>
           </div>
         )
@@ -741,7 +761,7 @@ export default function HomeSettingsPage() {
                     <label className="text-sm font-black uppercase text-gray-500 tracking-wider">Subjudul Section</label>
                     <textarea value={settings.gallery.subtitle} onChange={(e) => updateSection('gallery', { subtitle: e.target.value })} className="w-full px-4 py-3 rounded-2xl border border-gray-200" rows={2} />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4 mb-4">
                     <div className="space-y-2">
                       <label className="text-sm font-black uppercase text-gray-500 tracking-wider">Teks Tombol</label>
                       <input type="text" value={settings.gallery.buttonText} onChange={(e) => updateSection('gallery', { buttonText: e.target.value })} className="w-full px-4 py-3 rounded-2xl border border-gray-200" />
@@ -750,6 +770,28 @@ export default function HomeSettingsPage() {
                       <label className="text-sm font-black uppercase text-gray-500 tracking-wider">URL Galeri</label>
                       <input type="text" value={settings.gallery.url} onChange={(e) => updateSection('gallery', { url: e.target.value })} className="w-full px-4 py-3 rounded-2xl border border-gray-200" />
                     </div>
+                  </div>
+                  
+                  <div className="pt-4 border-t border-gray-150">
+                    <ImageUploadField 
+                      label="Foto Background Galeri Beranda (Opsional)" 
+                      value={settings.gallery.backgroundImage ?? null}
+                      onChange={(url) => updateSection('gallery', { backgroundImage: url })}
+                      description="Jika diunggah, akan ditampilkan sebagai background section galeri di beranda. Jika kosong, menggunakan warna default."
+                    />
+                    {settings.gallery.backgroundImage && (
+                      <div className="mt-4 animate-in slide-in-from-top-2">
+                        <label className="text-sm font-black uppercase text-gray-500 tracking-wider">Judul Foto (Required)</label>
+                        <input 
+                          type="text" 
+                          required
+                          value={settings.gallery.photoTitle || ''} 
+                          onChange={(e) => updateSection('gallery', { photoTitle: e.target.value })}
+                          className="w-full px-4 py-3 rounded-2xl border border-red-200 focus:ring-red-500 mt-1 font-bold"
+                          placeholder="Contoh: Kegiatan Belajar Mengajar MTs Al-Yakin"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
              </div>

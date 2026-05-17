@@ -36,16 +36,32 @@ export default function GalleryPreview({ settings }: { settings?: any }) {
   if (!mounted) return null;
   if (!showSection) return null;
 
+  const hasBg = !!settings?.backgroundImage;
+
   return (
-    <section className="py-24 bg-gray-50 dark:bg-gray-800 overflow-hidden font-inter border-y border-transparent dark:border-gray-900">
-      <div className="max-w-7xl mx-auto px-6">
+    <section 
+      className={`py-24 overflow-hidden font-inter border-y border-transparent dark:border-gray-900 relative ${
+        hasBg ? 'text-white' : 'bg-gray-50 dark:bg-gray-800'
+      }`}
+      style={hasBg ? {
+        backgroundImage: `url(${settings.backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      } : {}}
+    >
+      {hasBg && <div className="absolute inset-0 bg-black/65 z-0" />}
+      
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
           <div className="max-w-2xl">
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-black uppercase tracking-widest mb-4"
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest mb-4 ${
+                hasBg ? 'bg-white/10 backdrop-blur-md text-white border border-white/10' : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+              }`}
             >
               <span className="w-2 h-2 rounded-full bg-green-600 animate-pulse" />
               Dokumentasi
@@ -54,12 +70,16 @@ export default function GalleryPreview({ settings }: { settings?: any }) {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white leading-tight tracking-tight whitespace-pre-line"
+              className={`text-4xl md:text-5xl font-black leading-tight tracking-tight whitespace-pre-line ${
+                hasBg ? 'text-white' : 'text-gray-900 dark:text-white'
+              }`}
             >
               {title}
             </motion.h2>
             {subtitle && (
-              <p className="text-gray-500 dark:text-gray-400 mt-4 text-lg font-medium leading-relaxed">
+              <p className={`mt-4 text-lg font-medium leading-relaxed ${
+                hasBg ? 'text-gray-200' : 'text-gray-500 dark:text-gray-400'
+              }`}>
                 {subtitle}
               </p>
             )}
@@ -71,7 +91,9 @@ export default function GalleryPreview({ settings }: { settings?: any }) {
           >
             <Link 
               href={buttonUrl} 
-              className="inline-flex items-center gap-2 text-green-600 dark:text-green-400 font-bold hover:gap-3 transition-all group"
+              className={`inline-flex items-center gap-2 font-bold hover:gap-3 transition-all group ${
+                hasBg ? 'text-white hover:text-green-300' : 'text-green-600 dark:text-green-400'
+              }`}
             >
               {buttonText} 
               <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
