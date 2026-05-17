@@ -17,6 +17,19 @@ export default function GaleriPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [data, setData] = useState<Gallery[]>([]);
   const [loading, setLoading] = useState(true);
+  const [bannerPhoto, setBannerPhoto] = useState<string | null>(null);
+
+  useEffect(() => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    fetch(`${apiUrl}/api/settings/homepage`)
+      .then(r => r.json())
+      .then(res => {
+        if (res.success && res.data?.gallery?.backgroundImage) {
+          setBannerPhoto(res.data.gallery.backgroundImage);
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -66,6 +79,7 @@ export default function GaleriPage() {
         title="Galeri Foto MTs Al-Yakin"
         subtitle="Momen-momen berharga dan kegiatan menarik di lingkungan sekolah."
         breadcrumb="Dokumentasi Visual"
+        backgroundImage={bannerPhoto}
       />
 
       <div className="container mx-auto px-4 max-w-7xl mt-10">
