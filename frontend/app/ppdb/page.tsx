@@ -75,14 +75,14 @@ export default function PPDBPage() {
   const quota = ppdbSettings?.quota || 100;
   const registrationFee = ppdbSettings?.registrationFee !== undefined ? ppdbSettings.registrationFee : 0;
   
-  const steps = ppdbSettings?.steps || DEFAULT_STEPS;
-  const requirements = ppdbSettings?.requirements || DEFAULT_REQUIREMENTS;
-  const docs = ppdbSettings?.requiredDocuments || [
+  const steps = Array.isArray(ppdbSettings?.steps) ? ppdbSettings.steps : DEFAULT_STEPS;
+  const requirements = Array.isArray(ppdbSettings?.requirements) ? ppdbSettings.requirements : DEFAULT_REQUIREMENTS;
+  const docs = Array.isArray(ppdbSettings?.requiredDocuments) ? ppdbSettings.requiredDocuments : [
     { name: 'FC Akta Kelahiran', note: '3 Lembar' },
     { name: 'FC Kartu Keluarga', note: '3 Lembar' },
     { name: 'Pas Foto 3x4', note: '4 Lembar' }
   ];
-  const faqItems = ppdbSettings?.faq || DEFAULT_FAQS;
+  const faqItems = Array.isArray(ppdbSettings?.faq) ? ppdbSettings.faq : DEFAULT_FAQS;
 
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-gray-950 pb-24 font-inter transition-colors duration-300">

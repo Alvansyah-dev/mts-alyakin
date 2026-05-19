@@ -149,7 +149,7 @@ export default function KonsultasiPage() {
                   <p className="text-red-600 dark:text-red-400 font-bold text-xl">Gagal memuat diskusi.</p>
                   <button onClick={() => mutate()} className="mt-6 text-red-700 dark:text-red-300 underline font-medium">Coba lagi</button>
                 </motion.div>
-              ) : !consultations || consultations.length === 0 ? (
+              ) : !Array.isArray(consultations) || consultations.length === 0 ? (
                 <motion.div 
                   key="empty"
                   initial={{ opacity: 0, y: 20 }}
@@ -183,7 +183,7 @@ export default function KonsultasiPage() {
                     </motion.div>
                   ))}
                   
-                  {consultations.length >= limit * page && (
+                  {Array.isArray(consultations) && consultations.length >= limit * page && (
                     <div className="text-center pt-8">
                       <button 
                         onClick={() => setPage(p => p + 1)}

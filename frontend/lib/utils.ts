@@ -10,9 +10,15 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /** Format Date to Indonesian locale */
-export function formatDate(date: Date | string, options?: Intl.DateTimeFormatOptions) {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateTimeFormat('id-ID', options ?? { day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+export function formatDate(date: Date | string | null | undefined, options?: Intl.DateTimeFormatOptions) {
+  if (!date) return '-';
+  try {
+    const d = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(d.getTime())) return '-';
+    return new Intl.DateTimeFormat('id-ID', options ?? { day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+  } catch (e) {
+    return '-';
+  }
 }
 
 /** Format number with Indonesian locale */
@@ -49,15 +55,22 @@ export function formatRupiah(value: number) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(value);
 }
 
-export function timeAgo(dateStr: string): string {
-  const now = new Date()
-  const date = new Date(dateStr)
-  const diff = Math.floor((now.getTime() - date.getTime()) / 1000)
+export function timeAgo(dateStr: string | null | undefined): string {
+  if (!dateStr) return '';
+  try {
+    const now = new Date()
+    const date = new Date(dateStr)
+    if (isNaN(date.getTime())) return '';
+    const diff = Math.floor((now.getTime() - date.getTime()) / 1000)
+    if (isNaN(diff)) return '';
 
-  if (diff < 60) return 'Baru saja'
-  if (diff < 3600) return `${Math.floor(diff / 60)} menit yang lalu`
-  if (diff < 86400) return `${Math.floor(diff / 3600)} jam yang lalu`
-  if (diff < 2592000) return `${Math.floor(diff / 86400)} hari yang lalu`
-  if (diff < 31536000) return `${Math.floor(diff / 2592000)} bulan yang lalu`
-  return `${Math.floor(diff / 31536000)} tahun yang lalu`
+    if (diff < 60) return 'Baru saja'
+    if (diff < 3600) return `${Math.floor(diff / 60)} menit yang lalu`
+    if (diff < 86400) return `${Math.floor(diff / 3600)} jam yang lalu`
+    if (diff < 2592000) return `${Math.floor(diff / 86400)} hari yang lalu`
+    if (diff < 31536000) return `${Math.floor(diff / 2592000)} bulan yang lalu`
+    return `${Math.floor(diff / 31536000)} tahun yang lalu`
+  } catch (e) {
+    return '';
+  }
 }

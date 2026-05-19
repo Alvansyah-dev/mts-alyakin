@@ -94,7 +94,7 @@ export default function TestimoniSection({ settings }: { settings?: any }) {
               >
                 <div className="bg-white dark:bg-gray-800 p-10 rounded-[2.5rem] shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-700 transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-2xl group-hover:shadow-green-600/10 flex flex-col h-full">
                   <div className="flex gap-1 mb-8">
-                    {[...Array(rating)].map((_, i) => (
+                    {[...Array(Math.min(5, Math.max(0, parseInt(rating) || 5)))].map((_, i) => (
                       <Star key={i} size={16} className="fill-yellow-400 text-yellow-400" />
                     ))}
                   </div>

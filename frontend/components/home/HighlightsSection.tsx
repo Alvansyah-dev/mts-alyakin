@@ -14,7 +14,8 @@ export default function HighlightsSection({ settings }: { settings?: any }) {
     { title: 'Lingkungan Islami', description: 'Budaya sekolah yang kental dengan nilai keislaman.', icon: '🌙' }
   ];
 
-  const getCardLink = (title: string) => {
+  const getCardLink = (title?: string) => {
+    if (!title) return '/profil';
     const t = title.toLowerCase();
     if (t.includes('fasilitas')) return '/profil#fasilitas';
     if (t.includes('kurikulum')) return '/profil';

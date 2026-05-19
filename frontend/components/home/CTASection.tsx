@@ -12,7 +12,7 @@ const fetcher = (url: string) => get(url).then(res => res.data);
 export default function CTASection({ settings }: { settings?: any }) {
   const { data: siteSettings } = useSWR('/api/settings', fetcher);
   
-  const waSetting = siteSettings?.find((s: any) => s.key === 'whatsapp');
+  const waSetting = Array.isArray(siteSettings) ? siteSettings.find((s: any) => s.key === 'whatsapp') : null;
   const waNumber = waSetting?.value?.number || '6281234567890';
   const waMessage = waSetting?.value?.defaultMessage || 'Halo admin MTs Al-Yakin, saya ingin bertanya tentang informasi pendaftaran.';
   
