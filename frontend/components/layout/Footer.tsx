@@ -208,14 +208,19 @@ export default function Footer() {
             <div className="space-y-8">
               <h4 className="text-white font-black uppercase tracking-[0.2em] text-xs mb-8">Jam Operasional</h4>
               <div className="space-y-4 bg-gray-900/40 p-6 rounded-2xl border border-gray-800">
-                {settings.operatingHours.map((h, i) => (
-                  <div key={i} className="flex justify-between text-sm">
-                    <span className="text-gray-500 font-bold">{h.day}</span>
-                    <span className={`font-black uppercase text-xs ${h.status === 'BUKA' ? 'text-green-500' : 'text-red-500'}`}>
-                      {h.status === 'BUKA' ? h.time : 'Libur'}
-                    </span>
-                  </div>
-                ))}
+                {settings.operatingHours.map((h: any, i) => {
+                  const day = h.hari || h.day || '';
+                  const status = (h.status || '').toUpperCase();
+                  const time = h.time || (status === 'BUKA' ? `${h.jamBuka} - ${h.jamTutup}` : '-');
+                  return (
+                    <div key={i} className="flex justify-between text-sm">
+                      <span className="text-gray-500 font-bold">{day}</span>
+                      <span className={`font-black uppercase text-xs ${status === 'BUKA' ? 'text-green-500' : 'text-red-500'}`}>
+                        {status === 'BUKA' ? time : 'Libur'}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ) : (

@@ -19,7 +19,8 @@ import {
   Eye,
   EyeOff,
   User,
-  Quote
+  Quote,
+  Shield
 } from 'lucide-react'
 import EditorLayout from '@/components/admin/EditorLayout'
 import SectionCard from '@/components/admin/SectionCard'
@@ -59,6 +60,14 @@ interface AnnouncementItem {
   link?: string
 }
 
+interface HeroStatCard {
+  id: string
+  value: string
+  label: string
+  icon: string
+  color: string
+}
+
 interface HomePageSettings {
   hero: {
     title: string
@@ -70,6 +79,12 @@ interface HomePageSettings {
     button2Url: string
     backgroundImage: string
     photoTitle?: string
+    akreditasiBadge?: {
+      show: boolean
+      title: string
+      subtitle: string
+    }
+    heroStats?: HeroStatCard[]
   }
   stats: {
     items: StatItem[]
@@ -121,7 +136,18 @@ const DEFAULT_SETTINGS: HomePageSettings = {
     button2Text: 'Lihat Profil',
     button2Url: '/profil',
     backgroundImage: '',
-    photoTitle: ''
+    photoTitle: '',
+    akreditasiBadge: {
+      show: true,
+      title: "Terakreditasi A",
+      subtitle: "BAN-S/M 2023"
+    },
+    heroStats: [
+      { id: '1', value: "500+", label: "Alumni", icon: "🎓", color: "#1a472a" },
+      { id: '2', value: "12+", label: "Penghargaan", icon: "🏆", color: "#1a472a" },
+      { id: '3', value: "250+", label: "Siswa Aktif", icon: "👥", color: "#1a472a" },
+      { id: '4', value: "18+", label: "Ekskul", icon: "📚", color: "#1a472a" }
+    ]
   },
   stats: {
     items: [
@@ -193,10 +219,32 @@ export default function HomeSettingsPage() {
   const fetchSettings = async () => {
     try {
       const response = await get('/settings/homepage')
+      let fetched = null
       if (response && response.data) {
-        setSettings(response.data)
+        fetched = response.data
       } else if (response && !response.hasOwnProperty('success')) {
-        setSettings(response)
+        fetched = response
+      }
+
+      if (fetched) {
+        if (fetched.hero) {
+          if (!fetched.hero.akreditasiBadge) {
+            fetched.hero.akreditasiBadge = {
+              show: true,
+              title: "Terakreditasi A",
+              subtitle: "BAN-S/M 2023"
+            }
+          }
+          if (!fetched.hero.heroStats) {
+            fetched.hero.heroStats = [
+              { id: '1', value: "500+", label: "Alumni", icon: "🎓", color: "#1a472a" },
+              { id: '2', value: "12+", label: "Penghargaan", icon: "🏆", color: "#1a472a" },
+              { id: '3', value: "250+", label: "Siswa Aktif", icon: "👥", color: "#1a472a" },
+              { id: '4', value: "18+", label: "Ekskul", icon: "📚", color: "#1a472a" }
+            ]
+          }
+        }
+        setSettings(fetched)
       }
     } catch (err) {
       console.error('Failed to fetch settings:', err)
@@ -269,12 +317,21 @@ export default function HomeSettingsPage() {
   const renderPreview = () => {
     switch (activeTab) {
       case 'hero':
+        const showBadge = settings.hero.akreditasiBadge?.show ?? true
+        const badgeTitle = settings.hero.akreditasiBadge?.title || "Terakreditasi A"
+        const badgeSubtitle = settings.hero.akreditasiBadge?.subtitle || "BAN-S/M 2023"
+        const stats = settings.hero.heroStats || [
+          { value: "500+", label: "Alumni", icon: "🎓", color: "#1a472a" },
+          { value: "12+", label: "Penghargaan", icon: "🏆", color: "#1a472a" },
+          { value: "250+", label: "Siswa Aktif", icon: "👥", color: "#1a472a" },
+          { value: "18+", label: "Ekskul", icon: "📚", color: "#1a472a" },
+        ]
         return (
           <div 
-            className={`relative h-full w-full flex items-center px-6 overflow-hidden ${
+            className={`relative h-full w-full flex flex-col justify-between p-6 overflow-y-auto ${
               settings.hero.backgroundImage 
                 ? '' 
-                : 'bg-gradient-to-br from-green-700 via-green-600 to-emerald-500'
+                : 'bg-gradient-to-br from-green-900 via-green-800 to-emerald-950'
             }`}
             style={settings.hero.backgroundImage ? {
               backgroundImage: `url(${settings.hero.backgroundImage})`,
@@ -284,25 +341,56 @@ export default function HomeSettingsPage() {
           >
             {/* Dark overlay only if there is backgroundImage */}
             {settings.hero.backgroundImage && (
-              <div className="absolute inset-0 bg-black/55 z-0" />
+              <div className="absolute inset-0 bg-black/60 z-0" />
             )}
-            <div className="relative z-10 space-y-4">
-              <span className="inline-block bg-white/20 backdrop-blur-md text-white text-[8px] px-3 py-1 rounded-full font-bold uppercase tracking-widest border border-white/10">
-                {settings.hero.badge || 'BADGE TEXT'}
-              </span>
-              <h2 className="text-2xl font-black text-white leading-[1.1] tracking-tight">
-                {settings.hero.title || 'JUDUL HERO'}
-              </h2>
-              <p className="text-green-50 text-[10px] max-w-[240px] opacity-80 leading-relaxed">
-                {settings.hero.subtitle || 'SUBJUDUL HERO'}
-              </p>
-              <div className="flex gap-2 pt-2">
-                <div className="bg-white text-green-700 text-[8px] font-black px-4 py-2 rounded-xl shadow-lg">
-                  {settings.hero.button1Text || 'TOMBOL 1'}
+            <div className="relative z-10 flex justify-between items-start gap-4">
+              {/* Left text */}
+              <div className="space-y-3 max-w-[50%]">
+                <span className="inline-block bg-white/20 backdrop-blur-md text-white text-[8px] px-3 py-1 rounded-full font-bold uppercase tracking-widest border border-white/10">
+                  {settings.hero.badge || 'BADGE TEXT'}
+                </span>
+                <h2 className="text-lg font-black text-white leading-tight tracking-tight">
+                  {settings.hero.title || 'JUDUL HERO'}
+                </h2>
+                <p className="text-green-50 text-[9px] opacity-80 leading-relaxed line-clamp-3">
+                  {settings.hero.subtitle || 'SUBJUDUL HERO'}
+                </p>
+                <div className="flex gap-2 pt-1">
+                  <div className="bg-white text-green-700 text-[8px] font-black px-3 py-1.5 rounded-xl shadow-lg">
+                    {settings.hero.button1Text || 'TOMBOL 1'}
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-md border border-white/20 text-white text-[8px] font-black px-3 py-1.5 rounded-xl">
+                    {settings.hero.button2Text || 'TOMBOL 2'}
+                  </div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-md border border-white/20 text-white text-[8px] font-black px-4 py-2 rounded-xl">
-                  {settings.hero.button2Text || 'TOMBOL 2'}
-                </div>
+
+                {/* Akreditasi Badge */}
+                {showBadge && (
+                  <div className="bg-white rounded-xl p-2 flex items-center gap-2 border border-gray-100 max-w-[160px] shadow-lg animate-in fade-in">
+                    <Shield className="text-green-600 w-4 h-4 shrink-0" />
+                    <div>
+                      <p className="font-black text-gray-900 text-[8px] leading-tight">{badgeTitle}</p>
+                      <p className="text-[7px] font-bold text-gray-400 leading-none">{badgeSubtitle}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Right Stats Cards */}
+              <div className="grid grid-cols-2 gap-2 max-w-[45%]">
+                {stats.slice(0, 4).map((stat: any, i: number) => (
+                  <div 
+                    key={i} 
+                    className="backdrop-blur rounded-2xl p-2 flex flex-col justify-between aspect-square"
+                    style={{ backgroundColor: `${stat.color || '#1a472a'}cc` }}
+                  >
+                    <div className="text-lg">{stat.icon}</div>
+                    <div>
+                      <div className="text-xs font-black text-white leading-none">{stat.value}</div>
+                      <div className="text-white/60 text-[7px] font-bold uppercase tracking-wider mt-0.5 leading-tight">{stat.label}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -595,6 +683,110 @@ export default function HomeSettingsPage() {
                   />
                 </div>
               )}
+            </SectionCard>
+
+            <SectionCard title="Badge Akreditasi Hero" icon={Shield} description="Atur badge akreditasi putih dengan ikon perisai.">
+              <div className="space-y-6">
+                <label className="flex items-center justify-between p-5 bg-gray-50 dark:bg-gray-800 rounded-2xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <Shield className="w-5 h-5 text-green-600" />
+                    <div>
+                      <span className="font-black text-sm uppercase tracking-wider block text-gray-900 dark:text-white">Tampilkan Badge Akreditasi</span>
+                      <span className="text-[10px] text-gray-400 font-medium italic">Sembunyikan/tampilkan badge akreditasi di section Hero.</span>
+                    </div>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    checked={settings.hero.akreditasiBadge?.show ?? true} 
+                    onChange={(e) => {
+                      const badge = settings.hero.akreditasiBadge || { show: true, title: "Terakreditasi A", subtitle: "BAN-S/M 2023" }
+                      updateSection('hero', { akreditasiBadge: { ...badge, show: e.target.checked } })
+                    }}
+                    className="w-6 h-6 rounded-lg text-green-600 focus:ring-green-500 cursor-pointer"
+                  />
+                </label>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-black uppercase text-gray-500 dark:text-gray-400 tracking-wider">Judul Akreditasi</label>
+                    <input 
+                      type="text" 
+                      value={settings.hero.akreditasiBadge?.title || ''} 
+                      onChange={(e) => {
+                        const badge = settings.hero.akreditasiBadge || { show: true, title: "Terakreditasi A", subtitle: "BAN-S/M 2023" }
+                        updateSection('hero', { akreditasiBadge: { ...badge, title: e.target.value } })
+                      }}
+                      placeholder="Terakreditasi A"
+                      className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 font-bold"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-black uppercase text-gray-500 dark:text-gray-400 tracking-wider">Sub-teks Akreditasi</label>
+                    <input 
+                      type="text" 
+                      value={settings.hero.akreditasiBadge?.subtitle || ''} 
+                      onChange={(e) => {
+                        const badge = settings.hero.akreditasiBadge || { show: true, title: "Terakreditasi A", subtitle: "BAN-S/M 2023" }
+                        updateSection('hero', { akreditasiBadge: { ...badge, subtitle: e.target.value } })
+                      }}
+                      placeholder="BAN-S/M 2023"
+                      className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 font-bold"
+                    />
+                  </div>
+                </div>
+              </div>
+            </SectionCard>
+
+            <SectionCard title="Hero Stats Cards (Stats Hero)" icon={BarChart3} description="Kotak kecil berangka yang tampil di sebelah kanan Hero (Maksimal 4).">
+              <ListEditor<HeroStatCard>
+                items={settings.hero.heroStats || []}
+                onChange={(heroStats) => updateSection('hero', { heroStats })}
+                maxItems={4}
+                createNew={() => ({ id: String(Date.now()), value: '500+', label: 'Alumni', icon: '🎓', color: '#1a472a' })}
+                renderItem={(item, index, onChange) => (
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-gray-400">Emoji Icon</label>
+                      <input 
+                        type="text" 
+                        value={item.icon} 
+                        onChange={(e) => onChange({ ...item, icon: e.target.value })}
+                        className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-center text-xl font-bold"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-gray-400">Angka/Value</label>
+                      <input 
+                        type="text" 
+                        value={item.value} 
+                        onChange={(e) => onChange({ ...item, value: e.target.value })}
+                        className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 font-bold text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-gray-400">Label</label>
+                      <input 
+                        type="text" 
+                        value={item.label} 
+                        onChange={(e) => onChange({ ...item, label: e.target.value })}
+                        className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 font-bold text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase text-gray-400">Warna Background</label>
+                      <select 
+                        value={item.color || '#1a472a'} 
+                        onChange={(e) => onChange({ ...item, color: e.target.value })}
+                        className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-xs font-bold cursor-pointer"
+                      >
+                        <option value="#1a472a">Dark Green (#1a472a)</option>
+                        <option value="#0f2d1a">Darker Green (#0f2d1a)</option>
+                        <option value="#1a3a4a">Dark Teal (#1a3a4a)</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+              />
             </SectionCard>
           </div>
         )

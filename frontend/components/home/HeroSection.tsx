@@ -130,7 +130,6 @@ export default function HeroSection({ settings }: { settings?: any }) {
               <span>Bergabung dengan 500+ alumni sukses</span>
             </motion.div>
           </div>
-
           {/* Right Side: Visuals */}
           <div className="lg:col-span-5 relative">
             <motion.div 
@@ -139,31 +138,59 @@ export default function HeroSection({ settings }: { settings?: any }) {
               transition={{ duration: 1 }}
               className="grid grid-cols-2 gap-6"
             >
-              <div className="space-y-6 pt-12">
-                <StatCard icon={<GraduationCap />} value="500+" label="Alumni" color="bg-blue-500" />
-                <StatCard icon={<Users />} value="250+" label="Siswa Aktif" color="bg-emerald-500" />
-              </div>
-              <div className="space-y-6">
-                <StatCard icon={<Award />} value="12+" label="Penghargaan" color="bg-amber-500" />
-                <StatCard icon={<BookOpen />} value="18+" label="Ekskul" color="bg-indigo-500" />
-              </div>
+              {(() => {
+                const defaultStats = [
+                  { value: "500+", label: "Alumni", icon: "🎓", color: "#1a472a" },
+                  { value: "12+", label: "Penghargaan", icon: "🏆", color: "#1a472a" },
+                  { value: "250+", label: "Siswa Aktif", icon: "👥", color: "#1a472a" },
+                  { value: "18+", label: "Ekskul", icon: "📚", color: "#1a472a" }
+                ];
+                const stats = (settings?.heroStats && settings?.heroStats.length > 0) ? settings.heroStats : defaultStats;
+                const col1 = stats.filter((_: any, idx: number) => idx % 2 === 0);
+                const col2 = stats.filter((_: any, idx: number) => idx % 2 !== 0);
+
+                return (
+                  <>
+                    <div className="space-y-6 pt-12">
+                      {col1.slice(0, 2).map((item: any, i: number) => (
+                        <StatCard key={i} icon={item.icon} value={item.value} label={item.label} color={item.color} />
+                      ))}
+                    </div>
+                    <div className="space-y-6">
+                      {col2.slice(0, 2).map((item: any, i: number) => (
+                        <StatCard key={i} icon={item.icon} value={item.value} label={item.label} color={item.color} />
+                      ))}
+                    </div>
+                  </>
+                );
+              })()}
 
               {/* Decorative Floating Card */}
-              <motion.div
-                animate={{ y: [0, -20, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -top-10 -right-4 md:-right-10 bg-white dark:bg-gray-900 p-6 rounded-3xl shadow-2xl border border-white dark:border-gray-800 z-20 hidden md:block"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center text-green-600">
-                    <ShieldCheck size={24} />
-                  </div>
-                  <div>
-                    <div className="text-sm font-black text-gray-900 dark:text-white">Terakreditasi A</div>
-                    <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">BAN-S/M 2023</div>
-                  </div>
-                </div>
-              </motion.div>
+              {(() => {
+                const akreditasiShow = settings?.akreditasiBadge?.show !== false;
+                const akreditasiTitle = settings?.akreditasiBadge?.title || 'Terakreditasi A';
+                const akreditasiSubtitle = settings?.akreditasiBadge?.subtitle || 'BAN-S/M 2023';
+
+                if (!akreditasiShow) return null;
+
+                return (
+                  <motion.div
+                    animate={{ y: [0, -20, 0] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute -top-10 -right-4 md:-right-10 bg-white dark:bg-gray-900 p-6 rounded-3xl shadow-2xl border border-white dark:border-gray-800 z-20 hidden md:block"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center text-green-600">
+                        <ShieldCheck size={24} />
+                      </div>
+                      <div>
+                        <div className="text-sm font-black text-gray-900 dark:text-white">{akreditasiTitle}</div>
+                        <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{akreditasiSubtitle}</div>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })()}
             </motion.div>
           </div>
           
@@ -176,14 +203,21 @@ export default function HeroSection({ settings }: { settings?: any }) {
   );
 }
 
-function StatCard({ icon, value, label, color }: { icon: React.ReactNode, value: string, label: string, color: string }) {
+function StatCard({ icon, value, label, color }: { icon: string, value: string, label: string, color: string }) {
+  const isHexColor = color?.startsWith('#');
+  const cardStyle = isHexColor ? { backgroundColor: `${color}cc` } : {};
+  const cardBgClass = isHexColor ? '' : 'bg-white/10 dark:bg-gray-800/90';
+
   return (
-    <div className="group relative bg-white/10 dark:bg-gray-800/90 backdrop-blur-2xl border border-white/20 dark:border-gray-700/50 p-8 rounded-[2.5rem] shadow-2xl hover:bg-white/20 dark:hover:bg-gray-700/50 transition-all duration-500 cursor-default">
-      <div className={`w-14 h-14 ${color} rounded-2xl flex items-center justify-center text-white mb-6 shadow-xl group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500`}>
+    <div 
+      className={`group relative backdrop-blur-2xl border border-white/20 dark:border-gray-700/50 p-8 rounded-[2.5rem] shadow-2xl hover:-translate-y-1 transition-all duration-500 cursor-default ${cardBgClass}`}
+      style={cardStyle}
+    >
+      <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-white mb-6 shadow-xl text-3xl group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">
         {icon}
       </div>
       <div className="text-4xl font-black text-white dark:text-white mb-2 tracking-tight">{value}</div>
-      <div className="text-green-100 dark:text-green-200 text-xs font-black uppercase tracking-widest opacity-60">{label}</div>
+      <div className="text-green-100 dark:text-green-200 text-xs font-black uppercase tracking-widest opacity-80">{label}</div>
     </div>
   );
 }

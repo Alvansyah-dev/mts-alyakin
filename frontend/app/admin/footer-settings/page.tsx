@@ -42,10 +42,12 @@ interface FooterLink {
   url: string
 }
 
-interface OperatingHour {
-  day: string
-  time: string
-  status: 'BUKA' | 'LIBUR'
+interface JamOperasional {
+  id: string
+  hari: string
+  jamBuka: string
+  jamTutup: string
+  status: 'buka' | 'libur'
 }
 
 interface FooterSettings {
@@ -66,7 +68,7 @@ interface FooterSettings {
     twitter: string
   }
   quickLinks: FooterLink[]
-  operatingHours: OperatingHour[]
+  operatingHours: JamOperasional[]
   other: {
     copyright: string
     credit: string
@@ -104,9 +106,9 @@ const DEFAULT_FOOTER: FooterSettings = {
     { name: 'Kontak', url: '/kontak' }
   ],
   operatingHours: [
-    { day: 'Senin - Jumat', time: '07.00 - 16.00', status: 'BUKA' },
-    { day: 'Sabtu', time: '07.00 - 12.00', status: 'BUKA' },
-    { day: 'Minggu', time: '-', status: 'LIBUR' }
+    { id: '1', hari: 'Senin - Jumat', jamBuka: '07.00', jamTutup: '16.00', status: 'buka' },
+    { id: '2', hari: 'Sabtu', jamBuka: '07.00', jamTutup: '12.00', status: 'buka' },
+    { id: '3', hari: 'Minggu', jamBuka: '-', jamTutup: '-', status: 'libur' }
   ],
   other: {
     copyright: '© 2024 MTs Al-Yakin. Hak cipta dilindungi.',
@@ -132,7 +134,33 @@ export default function FooterSettingsPage() {
       const response = await fetch(`${apiUrl}/api/settings/footer`)
       const data = await response.json()
       if (data && data.success) {
-        setSettings(data.data || DEFAULT_FOOTER)
+        const fetched = data.data || DEFAULT_FOOTER
+        if (!fetched.operatingHours) {
+          fetched.operatingHours = DEFAULT_FOOTER.operatingHours
+        } else {
+          fetched.operatingHours = fetched.operatingHours.map((h: any, idx: number) => {
+            if (h.hari !== undefined) return h
+            const status = h.status === 'BUKA' || h.status === 'buka' ? 'buka' : 'libur'
+            let jamBuka = '07.00'
+            let jamTutup = '16.00'
+            if (h.time && h.time.includes('-')) {
+              const parts = h.time.split('-')
+              jamBuka = parts[0].trim()
+              jamTutup = parts[1].trim()
+            } else if (status === 'libur') {
+              jamBuka = '-'
+              jamTutup = '-'
+            }
+            return {
+              id: h.id || String(idx + 1),
+              hari: h.day || 'Senin',
+              jamBuka,
+              jamTutup,
+              status
+            }
+          })
+        }
+        setSettings(fetched)
       }
     } catch (err) {
       console.error('Failed to fetch footer settings:', err)
@@ -247,8 +275,10 @@ export default function FooterSettingsPage() {
                  <div className="space-y-2">
                     {settings.operatingHours.map((h, i) => (
                       <div key={i} className="flex justify-between text-[9px]">
-                         <span className="text-green-100/60">{h.day}</span>
-                         <span className={`font-bold ${h.status === 'BUKA' ? 'text-white' : 'text-red-400'}`}>{h.time}</span>
+                         <span className="text-green-100/60">{h.hari}</span>
+                         <span className={`font-bold ${h.status === 'buka' ? 'text-white' : 'text-red-400'}`}>
+                           {h.status === 'buka' ? `${h.jamBuka} - ${h.jamTutup}` : 'Libur'}
+                         </span>
                       </div>
                     ))}
                  </div>
@@ -409,35 +439,107 @@ export default function FooterSettingsPage() {
         )}
 
         {activeTab === 'hours' && (
-          <SectionCard title="Jam Operasional" icon={Clock}>
-             <ListEditor
-               items={settings.operatingHours}
-               onChange={(operatingHours) => updateSection('operatingHours', operatingHours)}
-               createNew={() => ({ day: 'Senin', time: '08:00 - 16:00', status: 'BUKA' })}
-               renderItem={(item, index, onChange) => (
-                 <div className="flex gap-4 items-center">
-                    <div className="flex-1 space-y-1">
-                       <label className="text-[10px] font-black uppercase text-gray-400">Hari</label>
-                       <input value={item.day} onChange={(e) => onChange({ ...item, day: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border font-bold" />
-                    </div>
-                    <div className="flex-1 space-y-1">
-                       <label className="text-[10px] font-black uppercase text-gray-400">Jam Operasional</label>
-                       <input value={item.time} onChange={(e) => onChange({ ...item, time: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border font-bold" />
-                    </div>
-                    <div className="w-32 space-y-1">
-                       <label className="text-[10px] font-black uppercase text-gray-400 text-center">Status</label>
-                       <select 
-                         value={item.status} 
-                         onChange={(e) => onChange({ ...item, status: e.target.value as any })}
-                         className="w-full px-4 py-2.5 rounded-xl border font-black uppercase text-[10px] tracking-widest bg-gray-50"
-                       >
-                          <option value="BUKA">BUKA</option>
-                          <option value="LIBUR">LIBUR</option>
-                       </select>
-                    </div>
-                 </div>
-               )}
-             />
+          <SectionCard 
+            title="Jam Operasional" 
+            icon={Clock}
+            description="Atur hari dan jam kerja operasional sekolah yang akan ditampilkan di footer website."
+          >
+             <div className="space-y-4">
+                {settings.operatingHours && settings.operatingHours.length > 0 ? (
+                  <div className="space-y-3">
+                    {settings.operatingHours.map((jam, index) => (
+                      <div key={jam.id || index} className="grid grid-cols-4 gap-3 items-center p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700">
+                        <div>
+                          <input 
+                            placeholder="Hari (contoh: Senin - Jumat)"
+                            value={jam.hari}
+                            onChange={(e) => {
+                              const newHours = [...settings.operatingHours]
+                              newHours[index] = { ...jam, hari: e.target.value }
+                              updateSection('operatingHours', newHours)
+                            }}
+                            className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-bold"
+                          />
+                        </div>
+                        <div>
+                          <input 
+                            placeholder="07.00"
+                            value={jam.jamBuka}
+                            onChange={(e) => {
+                              const newHours = [...settings.operatingHours]
+                              newHours[index] = { ...jam, jamBuka: e.target.value }
+                              updateSection('operatingHours', newHours)
+                            }}
+                            disabled={jam.status === 'libur'}
+                            className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                          />
+                        </div>
+                        <div>
+                          <input 
+                            placeholder="16.00"
+                            value={jam.jamTutup}
+                            onChange={(e) => {
+                              const newHours = [...settings.operatingHours]
+                              newHours[index] = { ...jam, jamTutup: e.target.value }
+                              updateSection('operatingHours', newHours)
+                            }}
+                            disabled={jam.status === 'libur'}
+                            className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-800"
+                          />
+                        </div>
+                        <div className="flex items-center justify-between gap-2 pl-2">
+                          <div className="flex items-center gap-2">
+                            <input 
+                              type="checkbox"
+                              id={`libur-${jam.id || index}`}
+                              checked={jam.status === 'libur'}
+                              onChange={(e) => {
+                                const isChecked = e.target.checked
+                                const newHours = [...settings.operatingHours]
+                                newHours[index] = { 
+                                  ...jam, 
+                                  status: isChecked ? 'libur' : 'buka',
+                                  jamBuka: isChecked ? '-' : (jam.jamBuka === '-' ? '07.00' : jam.jamBuka),
+                                  jamTutup: isChecked ? '-' : (jam.jamTutup === '-' ? '16.00' : jam.jamTutup)
+                                }
+                                updateSection('operatingHours', newHours)
+                              }}
+                              className="w-4 h-4 rounded text-green-600 focus:ring-green-500 border-gray-300 cursor-pointer"
+                            />
+                            <label htmlFor={`libur-${jam.id || index}`} className="text-sm font-semibold text-gray-600 dark:text-gray-300 cursor-pointer">Libur</label>
+                          </div>
+                          <button 
+                            onClick={() => {
+                              const newHours = settings.operatingHours.filter((_, i) => i !== index)
+                              updateSection('operatingHours', newHours)
+                            }}
+                            className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-all"
+                            title="Hapus"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-400 border-2 border-dashed border-gray-200 rounded-2xl">
+                    Belum ada jam operasional yang ditambahkan
+                  </div>
+                )}
+
+                <button
+                  onClick={() => {
+                    const newId = String(Date.now())
+                    const newItem = { id: newId, hari: 'Senin - Jumat', jamBuka: '07.00', jamTutup: '16.00', status: 'buka' as const }
+                    updateSection('operatingHours', [...(settings.operatingHours || []), newItem])
+                  }}
+                  className="w-full py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-gray-500 dark:text-gray-400 hover:border-green-400 hover:text-green-600 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+                >
+                  <Plus className="w-4 h-4" />
+                  Tambah Jam Operasional
+                </button>
+             </div>
           </SectionCard>
         )}
 
