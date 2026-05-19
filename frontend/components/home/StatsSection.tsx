@@ -65,7 +65,7 @@ export default function StatsSection({ settings }: { settings?: any }) {
     fetch(`${apiUrl}/api/settings/homepage`)
       .then(r => r.json())
       .then(data => {
-        if (data?.data?.stats) {
+        if (data?.data?.stats && Array.isArray(data.data.stats)) {
           setStats(data.data.stats);
         }
       })

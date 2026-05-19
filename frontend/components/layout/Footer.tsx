@@ -92,8 +92,8 @@ export default function Footer() {
           setSettings({
             school: { ...DEFAULT_FOOTER.school, ...res.data.school },
             contact: { ...DEFAULT_FOOTER.contact, ...res.data.contact },
-            quickLinks: res.data.quickLinks || DEFAULT_FOOTER.quickLinks,
-            operatingHours: res.data.operatingHours || DEFAULT_FOOTER.operatingHours,
+            quickLinks: Array.isArray(res.data.quickLinks) ? res.data.quickLinks : DEFAULT_FOOTER.quickLinks,
+            operatingHours: Array.isArray(res.data.operatingHours) ? res.data.operatingHours : DEFAULT_FOOTER.operatingHours,
             other: { ...DEFAULT_FOOTER.other, ...res.data.other }
           });
         }
@@ -209,9 +209,9 @@ export default function Footer() {
               <h4 className="text-white font-semibold uppercase tracking-[0.2em] text-xs mb-8">Jam Operasional</h4>
               <div className="space-y-4 bg-gray-800/40 p-6 rounded-2xl border border-gray-700">
                 {settings.operatingHours.map((h: any, i) => {
-                  const day = h.hari || h.day || '';
-                  const status = (h.status || '').toUpperCase();
-                  const time = h.time || (status === 'BUKA' ? `${h.jamBuka} - ${h.jamTutup}` : '-');
+                  const day = h?.hari || h?.day || '';
+                  const status = (h?.status || '').toUpperCase();
+                  const time = h?.time || (status === 'BUKA' ? `${h?.jamBuka || ''} - ${h?.jamTutup || ''}` : '-');
                   return (
                     <div key={i} className="flex justify-between text-sm">
                       <span className="text-gray-400 font-bold">{day}</span>

@@ -99,6 +99,15 @@ export default function NewsSlider({ settings }: { settings?: any }) {
     return () => clearInterval(timerRef.current);
   }, [isHovered, data, currentIndex]);
 
+  // Safe bounds check
+  useEffect(() => {
+    if (data.length > 0 && currentIndex >= data.length) {
+      setCurrentIndex(0);
+    }
+  }, [data, currentIndex]);
+
+  const currentItem = data[currentIndex] || data[0] || DEFAULT_NEWS[0];
+
   if (!mounted) return null;
   if (!showSection) return null;
 
@@ -200,10 +209,10 @@ export default function NewsSlider({ settings }: { settings?: any }) {
                 transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
                 className="absolute inset-0"
               >
-                {data[currentIndex].thumbnail || data[currentIndex].imageUrl ? (
+                {currentItem.thumbnail || currentItem.imageUrl ? (
                   <img 
-                    src={data[currentIndex].thumbnail || data[currentIndex].imageUrl} 
-                    alt={data[currentIndex].title}
+                    src={currentItem.thumbnail || currentItem.imageUrl} 
+                    alt={currentItem.title}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -226,23 +235,23 @@ export default function NewsSlider({ settings }: { settings?: any }) {
                   >
                     <div className="flex items-center gap-4 mb-6">
                       <span className="bg-green-600 text-white px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest shadow-lg shadow-green-600/30">
-                        {data[currentIndex].category || 'Update'}
+                        {currentItem.category || 'Update'}
                       </span>
                       <div className="flex items-center gap-2 text-sm text-gray-300 font-bold">
                         <Calendar size={16} className="text-green-400" />
-                        {formatDate(data[currentIndex].publishedAt || data[currentIndex].createdAt)}
+                        {formatDate(currentItem.publishedAt || currentItem.createdAt)}
                       </div>
                     </div>
                     <h3 className="text-3xl md:text-6xl font-black text-white mb-6 leading-[1.1] tracking-tighter">
-                      {data[currentIndex].title}
+                      {currentItem.title}
                     </h3>
-                    {data[currentIndex].excerpt && (
+                    {currentItem.excerpt && (
                       <p className="text-gray-300 mb-10 line-clamp-2 text-lg md:text-xl max-w-2xl font-medium leading-relaxed opacity-85">
-                        {data[currentIndex].excerpt}
+                        {currentItem.excerpt}
                       </p>
                     )}
                     <Link 
-                      href={`/berita/${data[currentIndex].slug || data[currentIndex].id}`}
+                      href={`/berita/${currentItem.slug || currentItem.id}`}
                       className="inline-flex items-center gap-3 bg-white text-gray-900 hover:bg-green-600 hover:text-white font-black px-10 py-5 rounded-2xl transition-all shadow-2xl active:scale-95"
                     >
                       Baca Selengkapnya
