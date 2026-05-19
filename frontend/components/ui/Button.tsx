@@ -19,17 +19,17 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses = {
-  primary: 'bg-gradient-to-r from-accent to-emerald-500 text-white hover:from-accent-hover hover:to-emerald-600',
-  secondary: 'bg-bg-subtle text-text-primary hover:bg-bg-subtle/80',
-  outline: 'border border-accent text-accent hover:bg-accent/10',
-  ghost: 'bg-transparent text-accent hover:bg-accent/10',
-  danger: 'bg-red-600 text-white hover:bg-red-700',
+  primary: 'bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-400 text-white font-semibold shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200',
+  secondary: 'border-2 border-green-600 dark:border-green-400 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 font-semibold transition-all duration-200',
+  outline: 'border-2 border-green-600 dark:border-green-400 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 font-semibold transition-all duration-200',
+  ghost: 'bg-transparent text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 font-medium',
+  danger: 'bg-red-600 text-white hover:bg-red-700 font-medium',
 };
 
 const sizeClasses = {
-  sm: 'px-3 py-1 text-sm rounded-md',
-  md: 'px-4 py-2 text-base rounded-lg',
-  lg: 'px-6 py-3 text-lg rounded-xl',
+  sm: 'px-4 py-2 text-sm rounded-lg',
+  md: 'px-6 py-3 text-base rounded-xl',
+  lg: 'px-8 py-4 text-lg rounded-2xl',
 };
 
 export default function Button({

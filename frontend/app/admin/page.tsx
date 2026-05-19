@@ -91,7 +91,7 @@ export default function AdminDashboard() {
       label: 'Pendaftar PPDB', 
       value: stats.totalPpdb, 
       icon: Users, 
-      color: 'bg-blue-500', 
+      gradient: 'from-blue-500 to-blue-600', 
       trend: stats.pendingPpdb > 0 ? `${stats.pendingPpdb} Menunggu` : 'Semua Terverifikasi',
       link: '/admin/ppdb-settings'
     },
@@ -99,7 +99,7 @@ export default function AdminDashboard() {
       label: 'Berita Sekolah', 
       value: stats.totalNews, 
       icon: BookOpen, 
-      color: 'bg-green-500', 
+      gradient: 'from-green-500 to-green-600', 
       trend: 'Update Terbaru',
       link: '/admin/berita-settings'
     },
@@ -107,7 +107,7 @@ export default function AdminDashboard() {
       label: 'Galeri Foto', 
       value: stats.totalGallery, 
       icon: Image, 
-      color: 'bg-purple-500', 
+      gradient: 'from-purple-500 to-purple-600', 
       trend: 'Visual Sekolah',
       link: '/admin/galeri-settings'
     },
@@ -115,7 +115,7 @@ export default function AdminDashboard() {
       label: 'Konsultasi', 
       value: stats.totalConsultation, 
       icon: MessageSquare, 
-      color: 'bg-orange-500', 
+      gradient: 'from-orange-500 to-orange-600', 
       trend: stats.unansweredConsultation > 0 ? `${stats.unansweredConsultation} Belum Dijawab` : 'Sudah Dijawab',
       link: '/admin/konsultasi-settings'
     },
@@ -149,23 +149,23 @@ export default function AdminDashboard() {
           <Link 
             key={idx} 
             href={item.link}
-            className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-none transition-all group"
+            className={`bg-gradient-to-br ${item.gradient} p-6 rounded-3xl hover:shadow-xl hover:scale-[1.01] transition-all group text-white`}
           >
             <div className="flex items-center justify-between mb-4">
-              <div className={`${item.color} p-3 rounded-2xl text-white shadow-lg`}>
+              <div className="bg-white/20 rounded-xl p-3 text-white">
                 <item.icon className="w-6 h-6" />
               </div>
-              <TrendingUp className="w-5 h-5 text-gray-300 group-hover:text-green-500 transition-colors" />
+              <TrendingUp className="w-5 h-5 text-white/40 group-hover:text-white transition-colors" />
             </div>
             <div className="space-y-1">
-              <h3 className="text-gray-500 dark:text-gray-400 text-sm font-bold uppercase tracking-wider">{item.label}</h3>
+              <h3 className="text-white/80 text-sm font-bold uppercase tracking-wider">{item.label}</h3>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-black text-gray-900 dark:text-white">
+                <span className="text-4xl font-bold text-white">
                   {loading ? '...' : item.value}
                 </span>
-                <span className="text-xs font-bold text-gray-400">Total</span>
+                <span className="text-xs font-semibold text-white/70">Total</span>
               </div>
-              <p className="text-xs font-bold text-green-600 dark:text-green-400 flex items-center gap-1 mt-2">
+              <p className="text-white/70 text-xs flex items-center gap-1 mt-2">
                 <CheckCircle className="w-3 h-3" />
                 {item.trend}
               </p>

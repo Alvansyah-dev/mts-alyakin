@@ -52,10 +52,10 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`sticky top-0 inset-x-0 z-50 transition-all duration-300 border-b border-transparent ${
+      className={`sticky top-0 inset-x-0 z-50 transition-all duration-300 border-b ${
         scrolled 
-          ? 'bg-white/90 dark:bg-gray-900/95 backdrop-blur-md shadow-lg py-3 dark:border-gray-800' 
-          : 'bg-white dark:bg-gray-900/95 backdrop-blur py-5 dark:border-gray-800'
+          ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-gray-200 dark:border-gray-750 shadow-sm py-3' 
+          : 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-gray-200 dark:border-gray-750 shadow-sm py-5'
       }`}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6">
@@ -67,19 +67,21 @@ export default function Navbar() {
               {settings.identity.siteName?.substring(0, 1) || 'A'}
             </span>
           )}
-          <span className="text-gray-900 dark:text-white tracking-tight">
+          <span className="text-green-700 dark:text-green-400 font-bold tracking-tight">
             {settings.identity.siteName}
           </span>
         </Link>
-
+ 
         <div className="hidden md:flex items-center gap-8">
           <ul className="flex items-center gap-6">
             {navLinks.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className={`text-sm font-bold transition-all hover:text-green-600 dark:hover:text-green-400 ${
-                    pathname === link.href ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-300'
+                  className={`text-sm transition-all hover:text-green-600 dark:hover:text-green-400 ${
+                    pathname === link.href 
+                      ? 'text-green-600 dark:text-green-400 font-semibold' 
+                      : 'text-gray-700 dark:text-gray-200 font-medium'
                   }`}
                 >
                   {link.label}
@@ -90,15 +92,15 @@ export default function Navbar() {
           <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-2" />
           <ThemeToggle />
         </div>
-
+ 
         <button
-          className="md:hidden p-2 text-gray-600 dark:text-gray-300"
+          className="md:hidden p-2 text-gray-700 dark:text-gray-200"
           onClick={() => setIsOpen(!isOpen)}
         >
           {isOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
       </div>
-
+ 
       {/* Mobile Menu */}
       <AnimatePresence>
         {isOpen && (
@@ -106,15 +108,17 @@ export default function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white dark:bg-gray-900 overflow-hidden border-t dark:border-gray-800"
+            className="md:hidden bg-white dark:bg-gray-900 overflow-hidden border-t border-gray-250 dark:border-gray-750"
           >
             <ul className="px-6 py-8 flex flex-col gap-4">
               {navLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className={`text-lg font-bold hover:text-green-600 dark:hover:text-green-400 ${
-                      pathname === link.href ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-300'
+                    className={`text-lg transition-all hover:text-green-600 dark:hover:text-green-400 ${
+                      pathname === link.href 
+                        ? 'text-green-600 dark:text-green-400 font-semibold' 
+                        : 'text-gray-700 dark:text-gray-200 font-medium'
                     }`}
                     onClick={() => setIsOpen(false)}
                   >
@@ -122,8 +126,8 @@ export default function Navbar() {
                   </Link>
                 </li>
               ))}
-              <li className="pt-4 mt-4 border-t dark:border-gray-800 flex justify-between items-center">
-                <span className="font-bold text-gray-900 dark:text-white">Mode Gelap</span>
+              <li className="pt-4 mt-4 border-t border-gray-250 dark:border-gray-750 flex justify-between items-center">
+                <span className="font-semibold text-gray-900 dark:text-white">Mode Gelap</span>
                 <ThemeToggle />
               </li>
             </ul>

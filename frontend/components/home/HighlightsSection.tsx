@@ -74,19 +74,23 @@ export default function HighlightsSection({ settings }: { settings?: any }) {
                 className="group h-full"
               >
                 <Link href={href} className="block h-full">
-                  <div className="relative z-10 h-full p-6 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-green-200 dark:hover:border-green-700 transition-all duration-300 flex flex-col justify-between">
+                  <div className="relative z-10 h-full p-6 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg hover:border-green-200 dark:hover:border-green-700 hover:scale-[1.01] transition-all duration-350 flex flex-col justify-between">
                     <div>
-                      <div className="bg-green-50 dark:bg-green-900/30 rounded-2xl p-4 w-16 h-16 flex items-center justify-center group-hover:bg-green-100 dark:group-hover:bg-green-900/40 transition-colors mb-6 text-3xl">
+                      <div className="bg-green-50 dark:bg-green-900/30 rounded-xl p-4 w-16 h-16 text-3xl flex items-center justify-center">
                         {item.icon || '✨'}
                       </div>
                       
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 tracking-tight group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                      <h3 className="text-gray-900 dark:text-white font-bold text-lg mt-4 mb-2 transition-colors group-hover:text-green-600 dark:group-hover:text-green-400">
                         {item.title}
                       </h3>
                       
-                      <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+                      <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
                         {item.description}
                       </p>
+                    </div>
+                    
+                    <div className="text-green-600 dark:text-green-400 mt-4 font-bold text-xl transition-transform group-hover:translate-x-1.5 duration-300">
+                      &rarr;
                     </div>
                   </div>
                 </Link>

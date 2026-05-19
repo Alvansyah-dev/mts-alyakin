@@ -51,24 +51,61 @@ export default function ProfilPage() {
   };
 
   // Visi & Misi
-  const vision = profile?.visionMission?.vision || '';
-  const missions = profile?.visionMission?.mission || [];
+  const vision = profile?.visionMission?.vision || 'Mewujudkan insan yang bertaqwa, berakhlak mulia, cerdas, terampil, dan berwawasan lingkungan.';
+  const missions = (profile?.visionMission?.mission && profile.visionMission.mission.length > 0) 
+    ? profile.visionMission.mission 
+    : [
+        { text: 'Menyelenggarakan proses pembelajaran yang efektif dan Islami.' },
+        { text: 'Membiasakan pengamalan nilai-nilai keagamaan dalam kehidupan sehari-hari.' },
+        { text: 'Meningkatkan prestasi akademik dan non-akademik siswa.' },
+        { text: 'Mengembangkan keterampilan teknologi informasi dan komunikasi.' }
+      ];
 
   // Sejarah
-  const historyContent = profile?.history?.content || '';
-  const timelineItems = profile?.history?.timeline || [];
+  const historyContent = profile?.history?.content || 'MTs Al-Yakin didirikan dengan komitmen kuat untuk menyediakan pendidikan berkualitas yang memadukan kurikulum nasional dan nilai-nilai kepesantrenan. Sejak berdiri, sekolah ini terus melahirkan lulusan berprestasi.';
+  const timelineItems = (profile?.history?.timeline && profile.history.timeline.length > 0)
+    ? profile.history.timeline
+    : [
+        { year: '2010', title: 'Yayasan Didirikan', description: 'Cikal bakal MTs Al-Yakin dimulai dengan pendirian yayasan pendidikan.' },
+        { year: '2012', title: 'Angkatan Pertama', description: 'Menerima pendaftaran siswa angkatan pertama dengan fasilitas mandiri.' },
+        { year: '2018', title: 'Akreditasi A', description: 'Meraih nilai akreditasi A (Sangat Baik) dari Badan Akreditasi Nasional.' }
+      ];
 
   // Fasilitas
-  const facilitiesItems = profile?.facilities?.items || [];
+  const facilitiesItems = (profile?.facilities?.items && profile.facilities.items.length > 0)
+    ? profile.facilities.items
+    : [
+        { name: 'Laboratorium Komputer', description: 'Dilengkapi komputer modern dan koneksi internet super cepat.', icon: '💻' },
+        { name: 'Perpustakaan Digital', description: 'Ribuan koleksi buku digital dan fisik untuk riset literatur siswa.', icon: '📖' },
+        { name: 'Sarana Olahraga', description: 'Lapangan basket, futsal, dan bulutangkis yang luas.', icon: '🏀' },
+        { name: 'Masjid Al-Yakin', description: 'Pusat ibadah, bimbingan takwa, dan kegiatan rohani islam.', icon: '🕌' }
+      ];
 
   // Prestasi
-  const achievementsItems = profile?.achievements?.items || [];
+  const achievementsItems = (profile?.achievements?.items && profile.achievements.items.length > 0)
+    ? profile.achievements.items
+    : [
+        { year: '2023', category: 'Akademik', title: 'Juara 1 Olimpiade Matematika Kabupaten' },
+        { year: '2023', category: 'Keagamaan', title: 'Juara Umum Musabaqah Tilawatil Qur\'an (MTQ)' }
+      ];
 
   // Guru & Staff
-  const teachersItems = profile?.teachers?.items || [];
+  const teachersItems = (profile?.teachers?.items && profile.teachers.items.length > 0)
+    ? profile.teachers.items
+    : [
+        { name: 'Drs. H. Ahmad Fauzi', gelar: 'M.Pd.', subject: 'Kepala Madrasah & Guru Akidah Akhlak', education: 'S2 Pendidikan' },
+        { name: 'Siti Rahmawati', gelar: 'S.Pd.', subject: 'Guru Matematika', education: 'S1 Pendidikan Matematika' },
+        { name: 'Rahmat Hidayat', gelar: 'S.Pd.I.', subject: 'Guru Bahasa Arab & Fiqih', education: 'S1 Sastra Arab' }
+      ];
 
   // Struktur Organisasi
-  const organizationItems = profile?.organization?.items || [];
+  const organizationItems = (profile?.organization?.items && profile.organization.items.length > 0)
+    ? profile.organization.items
+    : [
+        { name: 'Drs. H. Ahmad Fauzi, M.Pd.', role: 'Kepala Madrasah', level: 1 },
+        { name: 'Siti Rahmawati, S.Pd.', role: 'Waka Kurikulum', level: 2 },
+        { name: 'Rahmat Hidayat, S.Pd.I.', role: 'Waka Kesiswaan', level: 2 }
+      ];
 
   return (
     <main className="pb-20 font-inter bg-slate-50/50 dark:bg-gray-950 transition-colors duration-300">

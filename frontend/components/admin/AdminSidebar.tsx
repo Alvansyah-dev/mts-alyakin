@@ -86,7 +86,7 @@ export default function AdminSidebar() {
     >
       {/* Brand Header */}
       <div className="p-6 flex items-center gap-3 overflow-hidden">
-        <div className="min-w-[40px] w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg shadow-green-600/20">
+        <div className="min-w-[40px] w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center text-white font-bold p-2 shadow-lg shadow-green-900/50">
           A
         </div>
         <AnimatePresence>
@@ -95,10 +95,14 @@ export default function AdminSidebar() {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
-              className="whitespace-nowrap"
+              className="whitespace-nowrap flex flex-col gap-1"
             >
-              <h1 className="text-white font-black tracking-tight leading-none">CMS PANEL</h1>
-              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">MTs Al-Yakin</p>
+              <h1 className="text-white font-bold text-sm tracking-tight leading-none">MTs Al-Yakin</h1>
+              <div className="flex items-center">
+                <span className="bg-green-900 text-green-400 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                  ADMIN
+                </span>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -113,11 +117,13 @@ export default function AdminSidebar() {
       </button>
 
       {/* Navigation */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar px-4 space-y-8 py-6">
+      <div className="flex-1 overflow-y-auto custom-scrollbar px-4 space-y-6 py-6">
         {menuGroups.map((group, idx) => (
           <div key={idx} className="space-y-2">
             {!isCollapsed && (
-              <h3 className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em] px-2 mb-4">
+              <h3 className={`text-gray-600 text-xs uppercase tracking-widest px-2 mb-2 ${
+                idx > 0 ? 'border-t border-gray-800 pt-4 mt-2' : ''
+              }`}>
                 {group.title}
               </h3>
             )}
@@ -130,8 +136,8 @@ export default function AdminSidebar() {
                     href={item.href}
                     className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all group relative ${
                       isActive 
-                        ? 'bg-green-600 text-white shadow-lg shadow-green-600/20' 
-                        : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                        ? 'bg-green-600 text-white shadow-lg shadow-green-900/50' 
+                        : 'text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl'
                     }`}
                   >
                     <item.icon className={`w-5 h-5 min-w-[20px] ${isActive ? 'text-white' : 'group-hover:text-green-500'}`} />
@@ -155,9 +161,9 @@ export default function AdminSidebar() {
       <div className="p-4 border-t border-gray-800">
         <button 
           onClick={logout}
-          className="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-gray-500 hover:bg-red-500/10 hover:text-red-500 transition-all group"
+          className="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-all group"
         >
-          <LogOut className="w-5 h-5 min-w-[20px]" />
+          <LogOut className="w-5 h-5 min-w-[20px] text-red-400 group-hover:text-red-300" />
           {!isCollapsed && <span className="text-sm font-bold">Logout</span>}
         </button>
       </div>

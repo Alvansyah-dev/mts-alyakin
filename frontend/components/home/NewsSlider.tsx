@@ -7,8 +7,53 @@ import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
 import { News } from '../../types';
 
+const DEFAULT_NEWS: News[] = [
+  {
+    id: '1',
+    title: 'Pendaftaran Siswa Baru (PPDB) MTs Al-Yakin Telah Dibuka',
+    slug: 'pendaftaran-siswa-baru-ppdb-telah-dibuka',
+    excerpt: 'MTs Al-Yakin resmi membuka penerimaan peserta didik baru tahun ajaran ini. Dapatkan berbagai kemudahan pendaftaran secara online melalui portal resmi kami.',
+    content: 'Pendaftaran Siswa Baru (PPDB) MTs Al-Yakin Telah Dibuka...',
+    category: 'PPDB',
+    imageUrl: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80',
+    publishedAt: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    status: 'PUBLISHED',
+    author: 'admin',
+  },
+  {
+    id: '2',
+    title: 'Prestasi Gemilang: Siswa MTs Al-Yakin Menjuarai Olimpiade Sains Nasional',
+    slug: 'siswa-mts-alyakin-menjuarai-olimpiade-sains-nasional',
+    excerpt: 'Selamat dan sukses atas raihan medali emas dalam kompetisi Olimpiade Sains Nasional bidang Matematika yang diraih oleh siswa berprestasi kami.',
+    content: 'Prestasi Gemilang: Siswa MTs Al-Yakin Menjuarai Olimpiade Sains Nasional...',
+    category: 'Prestasi',
+    imageUrl: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80',
+    publishedAt: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    status: 'PUBLISHED',
+    author: 'admin',
+  },
+  {
+    id: '3',
+    title: 'Kegiatan Rutin Khotmil Qur\'an & Istighosah Bersama',
+    slug: 'kegiatan-rutin-khotmil-quran-dan-istighosah-bersama',
+    excerpt: 'Dalam rangka meningkatkan keimanan dan ketaqwaan, segenap civitas akademika MTs Al-Yakin menyelenggarakan doa dan zikir bersama secara rutin.',
+    content: 'Kegiatan Rutin Khotmil Qur\'an & Istighosah Bersama...',
+    category: 'Kegiatan',
+    imageUrl: 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=800&q=80',
+    publishedAt: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    status: 'PUBLISHED',
+    author: 'admin',
+  }
+];
+
 export default function NewsSlider({ settings }: { settings?: any }) {
-  const [data, setData] = useState<News[]>([]);
+  const [data, setData] = useState<News[]>(DEFAULT_NEWS);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
@@ -27,8 +72,8 @@ export default function NewsSlider({ settings }: { settings?: any }) {
     fetch(`${apiUrl}/api/news?limit=6&status=PUBLISHED`)
       .then(r => r.json())
       .then(res => {
-        if (res.success) {
-          setData(res.data || []);
+        if (res.success && res.data && res.data.length > 0) {
+          setData(res.data);
         }
       })
       .catch(console.error)
@@ -118,7 +163,7 @@ export default function NewsSlider({ settings }: { settings?: any }) {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-gray-500 dark:text-gray-400 mt-4 text-base font-medium max-w-lg"
+              className="text-gray-600 dark:text-gray-300 mt-4 text-base font-medium max-w-lg"
             >
               {subtitle}
             </motion.p>

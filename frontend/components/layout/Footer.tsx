@@ -106,7 +106,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-gray-950 text-gray-400 pt-24 pb-12 relative overflow-hidden">
+    <footer className="bg-gray-900 text-gray-300 pt-24 pb-12 relative overflow-hidden">
       {/* Decorative Blur */}
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-green-900/10 rounded-full blur-[120px] -ml-64 -mb-64" />
       
@@ -123,15 +123,15 @@ export default function Footer() {
                 </div>
               )}
               <div>
-                <span className="block text-xl font-black tracking-tight leading-none text-white">
+                <span className="block text-xl font-bold tracking-tight leading-none text-white">
                   {settings.school.title}
                 </span>
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-green-100/50">
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-green-400">
                   {settings.school.subtitle}
                 </span>
               </div>
             </Link>
-            <p className="text-gray-500 leading-relaxed font-medium">
+            <p className="text-gray-300 leading-relaxed font-medium">
               {settings.school.description}
             </p>
             {settings.other.showSocialIcons && (
@@ -151,7 +151,7 @@ export default function Footer() {
                       href={finalHref}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-10 h-10 rounded-xl bg-gray-900 border border-gray-800 flex items-center justify-center text-gray-500 hover:bg-green-600 hover:text-white hover:border-green-600 transition-all active:scale-90"
+                      className="w-10 h-10 rounded-xl bg-gray-800 border border-gray-700 flex items-center justify-center text-gray-300 hover:text-green-400 transition-all active:scale-90"
                     >
                       <social.icon size={20} />
                     </Link>
@@ -163,12 +163,12 @@ export default function Footer() {
 
           {/* Nav Links */}
           <div>
-            <h4 className="text-white font-black uppercase tracking-[0.2em] text-xs mb-8">Informasi</h4>
+            <h4 className="text-white font-semibold uppercase tracking-[0.2em] text-xs mb-8">Informasi</h4>
             <ul className="space-y-4">
               {settings.quickLinks.map((link, i) => (
                 <li key={i}>
-                  <Link href={link.url} className="font-bold hover:text-green-500 transition-colors flex items-center gap-2 group">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-600 scale-0 group-hover:scale-100 transition-transform" />
+                  <Link href={link.url} className="text-gray-300 hover:text-green-400 transition-colors flex items-center gap-2 group font-semibold text-sm">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 scale-0 group-hover:scale-100 transition-transform" />
                     {link.name}
                   </Link>
                 </li>
@@ -178,27 +178,27 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="text-white font-black uppercase tracking-[0.2em] text-xs mb-8">Hubungi Kami</h4>
+            <h4 className="text-white font-semibold uppercase tracking-[0.2em] text-xs mb-8">Hubungi Kami</h4>
             <ul className="space-y-6">
               <li className="flex gap-4">
-                <div className="w-10 h-10 rounded-xl bg-gray-900 border border-gray-800 flex items-center justify-center text-green-500 shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-gray-800 border border-gray-700 flex items-center justify-center text-green-400 shrink-0">
                   <MapPin size={20} />
                 </div>
-                <span className="font-medium text-sm leading-relaxed whitespace-pre-line">
+                <span className="font-medium text-sm leading-relaxed text-gray-300 whitespace-pre-line">
                   {settings.contact.address}
                 </span>
               </li>
               <li className="flex gap-4">
-                <div className="w-10 h-10 rounded-xl bg-gray-900 border border-gray-800 flex items-center justify-center text-green-500 shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-gray-800 border border-gray-700 flex items-center justify-center text-green-400 shrink-0">
                   <Phone size={20} />
                 </div>
-                <span className="font-medium text-sm">{settings.contact.phone}</span>
+                <span className="font-medium text-sm text-gray-300">{settings.contact.phone}</span>
               </li>
               <li className="flex gap-4">
-                <div className="w-10 h-10 rounded-xl bg-gray-900 border border-gray-800 flex items-center justify-center text-green-500 shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-gray-800 border border-gray-700 flex items-center justify-center text-green-400 shrink-0">
                   <Mail size={20} />
                 </div>
-                <span className="font-medium text-sm">{settings.contact.email}</span>
+                <span className="font-medium text-sm text-gray-300">{settings.contact.email}</span>
               </li>
             </ul>
           </div>
@@ -206,16 +206,16 @@ export default function Footer() {
           {/* Column 4: Jam Operasional ATAU Newsletter / CTA */}
           {settings.other.showOperatingHours ? (
             <div className="space-y-8">
-              <h4 className="text-white font-black uppercase tracking-[0.2em] text-xs mb-8">Jam Operasional</h4>
-              <div className="space-y-4 bg-gray-900/40 p-6 rounded-2xl border border-gray-800">
+              <h4 className="text-white font-semibold uppercase tracking-[0.2em] text-xs mb-8">Jam Operasional</h4>
+              <div className="space-y-4 bg-gray-800/40 p-6 rounded-2xl border border-gray-700">
                 {settings.operatingHours.map((h: any, i) => {
                   const day = h.hari || h.day || '';
                   const status = (h.status || '').toUpperCase();
                   const time = h.time || (status === 'BUKA' ? `${h.jamBuka} - ${h.jamTutup}` : '-');
                   return (
                     <div key={i} className="flex justify-between text-sm">
-                      <span className="text-gray-500 font-bold">{day}</span>
-                      <span className={`font-black uppercase text-xs ${status === 'BUKA' ? 'text-green-500' : 'text-red-500'}`}>
+                      <span className="text-gray-400 font-bold">{day}</span>
+                      <span className={`font-black uppercase text-xs ${status === 'BUKA' ? 'text-green-400' : 'text-red-400'}`}>
                         {status === 'BUKA' ? time : 'Libur'}
                       </span>
                     </div>
@@ -224,10 +224,10 @@ export default function Footer() {
               </div>
             </div>
           ) : (
-            <div className="bg-gray-900/50 p-8 rounded-[2rem] border border-gray-800 relative group overflow-hidden">
+            <div className="bg-gray-800/50 p-8 rounded-[2rem] border border-gray-700 relative group overflow-hidden">
               <div className="relative z-10">
                 <h4 className="text-white font-black text-lg mb-4">Ingin tahu lebih lanjut?</h4>
-                <p className="text-sm text-gray-500 font-medium mb-6">Jangan lewatkan informasi terbaru seputar kegiatan dan prestasi sekolah kami.</p>
+                <p className="text-sm text-gray-300 font-medium mb-6">Jangan lewatkan informasi terbaru seputar kegiatan dan prestasi sekolah kami.</p>
                 <Link 
                   href="/kontak" 
                   className="w-full py-4 bg-green-600 hover:bg-green-700 text-white rounded-xl font-black text-sm transition-all flex items-center justify-center gap-2 active:scale-95"
@@ -240,13 +240,13 @@ export default function Footer() {
           )}
         </div>
 
-        <div className="pt-12 border-t border-gray-900 flex flex-col md:flex-row justify-between items-center gap-8">
-          <p className="text-xs font-bold uppercase tracking-widest text-gray-600">
+        <div className="pt-12 border-t border-gray-700 flex flex-col md:flex-row justify-between items-center gap-8">
+          <p className="text-xs font-bold uppercase tracking-widest text-gray-500">
             {settings.other.copyright} {settings.other.credit}
           </p>
           <button 
             onClick={scrollToTop}
-            className="group flex items-center gap-3 text-gray-500 hover:text-white transition-colors"
+            className="group flex items-center gap-3 text-gray-500 hover:text-green-400 transition-colors"
           >
             <span className="text-xs font-black uppercase tracking-widest">Kembali ke Atas</span>
             <ArrowUpCircle className="group-hover:-translate-y-1 transition-transform" />

@@ -130,7 +130,7 @@ export default function HeroSection({ settings }: { settings?: any }) {
               <span>Bergabung dengan 500+ alumni sukses</span>
             </motion.div>
           </div>
-          {/* Right Side: Visuals */}
+              {/* Right Side: Visuals */}
           <div className="lg:col-span-5 relative">
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }}
@@ -139,26 +139,27 @@ export default function HeroSection({ settings }: { settings?: any }) {
               className="grid grid-cols-2 gap-6"
             >
               {(() => {
-                const defaultStats = [
-                  { value: "500+", label: "Alumni", icon: "🎓", color: "#1a472a" },
-                  { value: "12+", label: "Penghargaan", icon: "🏆", color: "#1a472a" },
-                  { value: "250+", label: "Siswa Aktif", icon: "👥", color: "#1a472a" },
-                  { value: "18+", label: "Ekskul", icon: "📚", color: "#1a472a" }
-                ];
-                const stats = (settings?.heroStats && settings?.heroStats.length > 0) ? settings.heroStats : defaultStats;
-                const col1 = stats.filter((_: any, idx: number) => idx % 2 === 0);
-                const col2 = stats.filter((_: any, idx: number) => idx % 2 !== 0);
+                const heroStatCards = (settings?.heroStats && settings.heroStats.length > 0) 
+                  ? settings.heroStats 
+                  : [
+                      { value: '500+', label: 'ALUMNI', icon: '🎓' },
+                      { value: '12+', label: 'PENGHARGAAN', icon: '🏆' },
+                      { value: '250+', label: 'SISWA AKTIF', icon: '👥' },
+                      { value: '18+', label: 'EKSKUL', icon: '📚' },
+                    ];
+                const col1 = heroStatCards.filter((_: any, idx: number) => idx % 2 === 0);
+                const col2 = heroStatCards.filter((_: any, idx: number) => idx % 2 !== 0);
 
                 return (
                   <>
                     <div className="space-y-6 pt-12">
                       {col1.slice(0, 2).map((item: any, i: number) => (
-                        <StatCard key={i} icon={item.icon} value={item.value} label={item.label} color={item.color} />
+                        <StatCard key={i} icon={item.icon} value={item.value} label={item.label} />
                       ))}
                     </div>
                     <div className="space-y-6">
                       {col2.slice(0, 2).map((item: any, i: number) => (
-                        <StatCard key={i} icon={item.icon} value={item.value} label={item.label} color={item.color} />
+                        <StatCard key={i} icon={item.icon} value={item.value} label={item.label} />
                       ))}
                     </div>
                   </>
@@ -203,21 +204,16 @@ export default function HeroSection({ settings }: { settings?: any }) {
   );
 }
 
-function StatCard({ icon, value, label, color }: { icon: string, value: string, label: string, color: string }) {
-  const isHexColor = color?.startsWith('#');
-  const cardStyle = isHexColor ? { backgroundColor: `${color}cc` } : {};
-  const cardBgClass = isHexColor ? '' : 'bg-white/10 dark:bg-gray-800/90';
-
+function StatCard({ icon, value, label }: { icon: string, value: string, label: string }) {
   return (
     <div 
-      className={`group relative backdrop-blur-2xl border border-white/20 dark:border-gray-700/50 p-8 rounded-[2.5rem] shadow-2xl hover:-translate-y-1 transition-all duration-500 cursor-default ${cardBgClass}`}
-      style={cardStyle}
+      className="bg-green-800/70 backdrop-blur-sm border border-green-700/50 rounded-2xl p-5 shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-default"
     >
-      <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-white mb-6 shadow-xl text-3xl group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">
+      <div className="text-3xl mb-2">
         {icon}
       </div>
-      <div className="text-4xl font-black text-white dark:text-white mb-2 tracking-tight">{value}</div>
-      <div className="text-green-100 dark:text-green-200 text-xs font-black uppercase tracking-widest opacity-80">{label}</div>
+      <div className="text-3xl font-black text-white tracking-tight">{value}</div>
+      <div className="text-green-200 text-xs font-semibold tracking-widest mt-1 uppercase">{label}</div>
     </div>
   );
 }
