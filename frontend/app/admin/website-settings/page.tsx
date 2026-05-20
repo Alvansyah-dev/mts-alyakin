@@ -23,6 +23,7 @@ import TabNav from '@/components/admin/TabNav'
 import ImageUploadField from '@/components/admin/ImageUploadField'
 import { get, put } from '@/lib/api'
 import { toast } from 'sonner'
+import { getSettings, saveSettings } from '@/lib/firestore'
 
 // --- Interfaces ---
 
@@ -80,11 +81,22 @@ export default function WebsiteSettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-      const response = await fetch(`${apiUrl}/api/settings/general`)
-      const data = await response.json()
-      if (data && data.success) {
-        setSettings(data.data || DEFAULT_SETTINGS)
+      // 1. Try Firestore first
+      const fsData = await getSettings('general');
+      let fetched = fsData;
+
+      // 2. Fallback to API if Firestore is empty
+      if (!fetched) {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+        const response = await fetch(`${apiUrl}/api/settings/general`)
+        const data = await response.json()
+        if (data && data.success) {
+          fetched = data.data || DEFAULT_SETTINGS
+        }
+      }
+
+      if (fetched) {
+        setSettings(fetched as any)
       }
     } catch (err) {
       console.error('Failed to fetch website settings:', err)
@@ -94,29 +106,32 @@ export default function WebsiteSettingsPage() {
   const handleSave = async () => {
     setIsSaving(true)
     try {
-      const token = localStorage.getItem('admin_token')
-      if (!token) {
-        alert('Sesi habis. Silakan login ulang.')
-        window.location.href = '/admin/login'
-        return
+      // 1. Save to Firestore (always works in production)
+      const firestoreOk = await saveSettings('general', settings);
+
+      // 2. Try saving to backend (optional, non-blocking)
+      try {
+        const token = localStorage.getItem('admin_token')
+        if (token) {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+          await fetch(`${apiUrl}/api/settings/general`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(settings)
+          });
+        }
+      } catch (err) {
+        console.warn('Backend save failed, Firestore save is okay:', err);
       }
-      
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-      const res = await fetch(`${apiUrl}/api/settings/general`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(settings)
-      })
-      
-      const data = await res.json()
-      if (data.success) {
+
+      if (firestoreOk) {
         setIsDirty(false)
         toast.success('Pengaturan website berhasil disimpan!')
       } else {
-        toast.error('Gagal menyimpan: ' + data.message)
+        toast.error('Gagal menyimpan. Coba lagi.')
       }
     } catch (err) {
       toast.error('Gagal menyimpan pengaturan.')

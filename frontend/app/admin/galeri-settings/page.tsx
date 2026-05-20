@@ -37,9 +37,9 @@ import { toast } from 'sonner'
 interface GalleryItem {
   id: string
   title: string
-  subtitle?: string
+  description?: string
   imageUrl: string
-  publicId: string
+  cloudinaryId?: string
   category: string
   isPublic: boolean
   createdAt: string
@@ -55,7 +55,7 @@ interface UploadQueueItem {
   file: File
   preview: string
   title: string
-  subtitle: string
+  description: string
   category: string
   isPublic: boolean
   status: 'IDLE' | 'UPLOADING' | 'SUCCESS' | 'ERROR'
@@ -136,18 +136,18 @@ export default function GallerySettingsPage() {
   }
 
   const handleFiles = (files: FileList) => {
-    const newItems: UploadQueueItem[] = Array.from(files).map(file => ({
-      file,
-      preview: URL.createObjectURL(file),
-      title: file.name.split('.')[0],
-      subtitle: '',
-      category: 'Umum',
-      isPublic: true,
-      status: 'IDLE',
-      progress: 0
-    }))
-    setUploadQueue(prev => [...prev, ...newItems])
-  }
+     const newItems: UploadQueueItem[] = Array.from(files).map(file => ({
+       file,
+       preview: URL.createObjectURL(file),
+       title: file.name.split('.')[0],
+       description: '',
+       category: 'Umum',
+       isPublic: true,
+       status: 'IDLE',
+       progress: 0
+     }))
+     setUploadQueue(prev => [...prev, ...newItems])
+   }
 
   const removeQueueItem = (index: number) => {
     setUploadQueue(prev => {
@@ -214,7 +214,7 @@ export default function GallerySettingsPage() {
             },
             body: JSON.stringify({
               title: uploadQueue[i].title,
-              description: uploadQueue[i].subtitle || '',
+              description: uploadQueue[i].description || '',
               category: uploadQueue[i].category || 'Umum',
               isPublic: uploadQueue[i].isPublic !== false,
               imageUrl,
@@ -451,10 +451,10 @@ export default function GallerySettingsPage() {
                             <X className="w-4 h-4" />
                           </button>
                         </div>
-                        <input
+                         <input
                           placeholder="Keterangan singkat..."
-                          value={item.subtitle}
-                          onChange={(e) => updateQueueItem(idx, { subtitle: e.target.value })}
+                          value={item.description}
+                          onChange={(e) => updateQueueItem(idx, { description: e.target.value })}
                           className="text-[10px] font-medium text-gray-500 bg-transparent border-none p-0 focus:ring-0 w-full"
                         />
                         <div className="flex gap-2">
@@ -559,7 +559,7 @@ export default function GallerySettingsPage() {
                     </div>
                     <div className="px-2">
                       <h4 className="font-black text-gray-900 line-clamp-1 group-hover:text-green-600 transition-colors uppercase tracking-tight">{item.title}</h4>
-                      <p className="text-xs text-gray-400 font-medium line-clamp-1 mt-1">{item.subtitle || 'Tidak ada keterangan'}</p>
+                      <p className="text-xs text-gray-400 font-medium line-clamp-1 mt-1">{item.description || 'Tidak ada keterangan'}</p>
                     </div>
                   </div>
                 ))}
@@ -627,8 +627,8 @@ export default function GallerySettingsPage() {
               <div className="space-y-2">
                 <label className="text-xs font-black uppercase text-gray-400">Keterangan/Sub-judul</label>
                 <textarea
-                  value={editingItem.subtitle}
-                  onChange={(e) => setEditingItem({ ...editingItem, subtitle: e.target.value })}
+                  value={editingItem.description || ''}
+                  onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })}
                   className="w-full px-4 py-3 rounded-2xl border border-gray-200"
                   rows={2}
                 />

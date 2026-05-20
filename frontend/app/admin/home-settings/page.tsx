@@ -29,6 +29,7 @@ import ListEditor from '@/components/admin/ListEditor'
 import ImageUploadField from '@/components/admin/ImageUploadField'
 import { get, put } from '@/lib/api'
 import { toast } from 'sonner'
+import { getSettings, saveSettings } from '@/lib/firestore'
 
 // --- Interfaces ---
 
@@ -218,12 +219,18 @@ export default function HomeSettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      const response = await get('/settings/homepage')
-      let fetched = null
-      if (response && response.data) {
-        fetched = response.data
-      } else if (response && !response.hasOwnProperty('success')) {
-        fetched = response
+      // 1. Try Firestore first
+      const fsData = await getSettings('homepage');
+      let fetched = fsData;
+
+      // 2. Fallback to API if Firestore is empty
+      if (!fetched) {
+        const response = await get('/settings/homepage');
+        if (response && response.data) {
+          fetched = response.data;
+        } else if (response && !response.hasOwnProperty('success')) {
+          fetched = response;
+        }
       }
 
       if (fetched) {
@@ -244,52 +251,48 @@ export default function HomeSettingsPage() {
             ]
           }
         }
-        setSettings(fetched)
+        setSettings(fetched as any);
       }
     } catch (err) {
-      console.error('Failed to fetch settings:', err)
+      console.error('Failed to fetch settings:', err);
     }
   }
 
   const handleSave = async () => {
     setIsSaving(true)
     try {
-      const token = localStorage.getItem('admin_token')
-      
-      if (!token) {
-        alert('Sesi habis. Silakan login ulang.')
-        window.location.href = '/admin/login'
-        return
-      }
-      
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL 
-        || 'http://localhost:5000'
-      
-      const res = await fetch(
-        `${apiUrl}/api/settings/homepage`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(settings)
+      // 1. Save to Firestore (always works in production)
+      const firestoreOk = await saveSettings('homepage', settings);
+
+      // 2. Try saving to backend (optional, non-blocking)
+      try {
+        const token = localStorage.getItem('admin_token');
+        if (token) {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+          await fetch(`${apiUrl}/api/settings/homepage`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(settings)
+          });
         }
-      )
-      
-      const data = await res.json()
-      
-      if (data.success) {
-        setIsDirty(false)
-        setLastSaved(new Date())
-        toast.success('Pengaturan berhasil disimpan!')
+      } catch (err) {
+        console.warn('Backend save failed, Firestore save is okay:', err);
+      }
+
+      if (firestoreOk) {
+        setIsDirty(false);
+        setLastSaved(new Date());
+        toast.success('Pengaturan berhasil disimpan!');
       } else {
-        toast.error('Gagal menyimpan: ' + data.message)
+        toast.error('Gagal menyimpan. Coba lagi.');
       }
     } catch (err: any) {
-      toast.error('Error koneksi: ' + err.message)
+      toast.error('Error: ' + err.message);
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
   }
 

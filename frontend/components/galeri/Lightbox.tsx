@@ -102,10 +102,15 @@ export default function Lightbox({ images, currentIndex, isOpen, onClose, onNext
               draggable={false}
             />
             
-            <div className="absolute bottom-8 left-0 right-0 text-center px-4">
+            <div className="absolute bottom-8 left-0 right-0 text-center px-4 max-w-3xl mx-auto">
               <h3 className="text-white text-xl md:text-2xl font-bold mb-2 drop-shadow-lg">
                 {currentImage.title}
               </h3>
+              {currentImage.description && (
+                <p className="text-gray-300 text-xs md:text-sm mb-3 drop-shadow-md max-w-xl mx-auto leading-relaxed">
+                  {currentImage.description}
+                </p>
+              )}
               <div className="inline-block bg-accent px-3 py-1 rounded-full text-white text-sm font-medium">
                 {currentImage.category}
               </div>
