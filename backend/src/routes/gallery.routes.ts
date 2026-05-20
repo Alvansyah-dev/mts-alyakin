@@ -42,7 +42,7 @@ const optionalAuth = (req: any, res: any, next: any) => {
 router.get('/', optionalAuth, galleryController.getGallery);
 
 router.post('/', verifyToken, validate(createGallerySchema), galleryController.createGallery);
-router.put('/reorder', verifyToken, validate(z.object({ body: reorderSchema }).passthrough()), galleryController.reorderGallery);
+router.put('/reorder', verifyToken, validate(reorderSchema), galleryController.reorderGallery);
 router.put('/:id', verifyToken, validate(updateGallerySchema), galleryController.updateGallery);
 router.delete('/:id', verifyToken, galleryController.deleteGallery);
 

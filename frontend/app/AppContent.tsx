@@ -6,6 +6,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import WhatsAppFloat from '@/components/ui/WhatsAppFloat'
 import PopupBanner from '@/components/ui/PopupBanner'
+import { Toaster } from 'sonner'
 
 export default function AppContent({
   children,
@@ -25,6 +26,7 @@ export default function AppContent({
       suppressHydrationWarning
     >
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+        <Toaster position="top-right" richColors />
         {!isAdminPage && <Navbar />}
         <main className="flex-1">
           {children}
