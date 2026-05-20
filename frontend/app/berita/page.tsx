@@ -38,92 +38,7 @@ const getCategoryGradient = (category?: string) => {
   return gradients[norm] || gradients['UMUM']
 }
 
-const DEFAULT_NEWS: News[] = [
-  {
-    id: '1',
-    title: 'Pendaftaran Siswa Baru (PPDB) MTs Al-Yakin Telah Dibuka',
-    slug: 'pendaftaran-siswa-baru-ppdb-telah-dibuka',
-    excerpt: 'MTs Al-Yakin resmi membuka penerimaan peserta didik baru tahun ajaran ini. Dapatkan berbagai kemudahan pendaftaran secara online melalui portal resmi kami.',
-    content: 'Pendaftaran Siswa Baru (PPDB) MTs Al-Yakin Telah Dibuka...',
-    category: 'Kegiatan',
-    thumbnail: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80',
-    publishedAt: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    status: 'PUBLISHED',
-    author: 'admin',
-  },
-  {
-    id: '2',
-    title: 'Prestasi Gemilang: Siswa MTs Al-Yakin Menjuarai Olimpiade Sains Nasional',
-    slug: 'siswa-mts-alyakin-menjuarai-olimpiade-sains-nasional',
-    excerpt: 'Selamat dan sukses atas raihan medali emas dalam kompetisi Olimpiade Sains Nasional bidang Matematika yang diraih oleh siswa berprestasi kami.',
-    content: 'Prestasi Gemilang: Siswa MTs Al-Yakin Menjuarai Olimpiade Sains Nasional...',
-    category: 'Prestasi',
-    thumbnail: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80',
-    publishedAt: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    status: 'PUBLISHED',
-    author: 'admin',
-  },
-  {
-    id: '3',
-    title: 'Kegiatan Rutin Khotmil Qur\'an & Istighosah Bersama',
-    slug: 'kegiatan-rutin-khotmil-quran-dan-istighosah-bersama',
-    excerpt: 'Dalam rangka meningkatkan keimanan dan ketaqwaan, segenap civitas akademika MTs Al-Yakin menyelenggarakan doa dan zikir bersama secara rutin.',
-    content: 'Kegiatan Rutin Khotmil Qur\'an & Istighosah Bersama...',
-    category: 'Kegiatan',
-    thumbnail: 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=800&q=80',
-    publishedAt: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    status: 'PUBLISHED',
-    author: 'admin',
-  },
-  {
-    id: '4',
-    title: 'Pelaksanaan Ujian Semester Berbasis Komputer',
-    slug: 'pelaksanaan-ujian-semester-berbasis-komputer',
-    excerpt: 'Sebagai sekolah modern, MTs Al-Yakin menerapkan sistem ujian berbasis komputer (CBT) untuk integritas dan efisiensi penilaian hasil belajar.',
-    content: 'Pelaksanaan Ujian Semester Berbasis Komputer...',
-    category: 'Akademik',
-    thumbnail: 'https://images.unsplash.com/photo-1571260899304-425eee4c7efc?auto=format&fit=crop&w=800&q=80',
-    publishedAt: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    status: 'PUBLISHED',
-    author: 'admin',
-  },
-  {
-    id: '5',
-    title: 'Peringatan Hari Guru Nasional di MTs Al-Yakin',
-    slug: 'peringatan-hari-guru-nasional-di-mts-alyakin',
-    excerpt: 'Momen penuh haru dan apresiasi dari seluruh siswa untuk para dewan guru yang telah berdedikasi membimbing dan mendidik tanpa lelah.',
-    content: 'Peringatan Hari Guru Nasional di MTs Al-Yakin...',
-    category: 'Kegiatan',
-    thumbnail: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=800&q=80',
-    publishedAt: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    status: 'PUBLISHED',
-    author: 'admin',
-  },
-  {
-    id: '6',
-    title: 'Bakti Sosial & Santunan Anak Yatim',
-    slug: 'bakti-sosial-dan-santunan-anak-yatim',
-    excerpt: 'Menumbuhkan kepedulian sosial siswa melalui kegiatan bakti sosial pembagian sembako dan santunan rutin yayasan.',
-    content: 'Bakti Sosial & Santunan Anak Yatim...',
-    category: 'Umum',
-    thumbnail: 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&w=800&q=80',
-    publishedAt: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    status: 'PUBLISHED',
-    author: 'admin',
-  }
-];
+const DEFAULT_NEWS: News[] = [];
 
 export default function BeritaPage() {
   const [search, setSearch] = useState('');
@@ -131,7 +46,7 @@ export default function BeritaPage() {
   const [page, setPage] = useState(1);
   const limit = 9;
 
-  const [newsItems, setNewsItems] = useState<News[]>(DEFAULT_NEWS);
+  const [newsItems, setNewsItems] = useState<News[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
