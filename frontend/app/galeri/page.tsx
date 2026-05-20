@@ -11,86 +11,11 @@ import { SkeletonImage } from '@/components/ui/LoadingSkeleton';
 
 const CATEGORIES = ['Semua', 'Kegiatan Sekolah', 'Prestasi', 'Fasilitas', 'Belajar Mengajar', 'Ekskul'];
 
-const DEFAULT_GALLERY: Gallery[] = [
-  {
-    id: '1',
-    title: 'Upacara Bendera Hari Senin',
-    imageUrl: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80',
-    category: 'Kegiatan Sekolah',
-    description: 'Upacara bendera rutin dilaksanakan setiap hari Senin untuk meningkatkan kedisiplinan dan rasa nasionalisme siswa.',
-    isPublic: true,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    title: 'Pembelajaran di Laboratorium Komputer',
-    imageUrl: 'https://images.unsplash.com/photo-1571260899304-425eee4c7efc?auto=format&fit=crop&w=800&q=80',
-    category: 'Belajar Mengajar',
-    description: 'Siswa MTs Al-Yakin melakukan praktek teknologi informasi di laboratorium komputer yang lengkap.',
-    isPublic: true,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '3',
-    title: 'Juara 1 Lomba Pidato Bahasa Arab',
-    imageUrl: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=800&q=80',
-    category: 'Prestasi',
-    description: 'Siswa MTs Al-Yakin meraih peringkat pertama dalam ajang kejuaraan pidato tingkat provinsi.',
-    isPublic: true,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '4',
-    title: 'Kegiatan Ekstrakurikuler Pramuka',
-    imageUrl: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=800&q=80',
-    category: 'Ekskul',
-    description: 'Pendidikan karakter dan kemandirian siswa melalui latihan rutin pramuka setiap hari Sabtu.',
-    isPublic: true,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '5',
-    title: 'Wisuda Tahfidz Al-Qur\'an',
-    imageUrl: 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=800&q=80',
-    category: 'Kegiatan Sekolah',
-    description: 'Apresiasi kepada para hafiz/hafizah siswa MTs Al-Yakin yang menyelesaikan target hafalan juz.',
-    isPublic: true,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '6',
-    title: 'Studi Banding & Karya Wisata',
-    imageUrl: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80',
-    category: 'Kegiatan Sekolah',
-    description: 'Kegiatan edukatif di luar kelas untuk memperluas wawasan dan pengalaman praktis siswa.',
-    isPublic: true,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '7',
-    title: 'Fasilitas Laboratorium IPA',
-    imageUrl: 'https://images.unsplash.com/photo-1518152006812-edab29b069ac?auto=format&fit=crop&w=800&q=80',
-    category: 'Fasilitas',
-    description: 'Praktikum biologi dan fisika menggunakan alat peraga dan mikroskop modern di Laboratorium IPA.',
-    isPublic: true,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '8',
-    title: 'Kegiatan Sholat Dhuha Berjamaah',
-    imageUrl: 'https://images.unsplash.com/photo-1597935258735-e254c1839512?auto=format&fit=crop&w=800&q=80',
-    category: 'Belajar Mengajar',
-    description: 'Pembiasaan ibadah sunnah sholat dhuha berjamaah setiap pagi di Masjid sekolah.',
-    isPublic: true,
-    createdAt: new Date().toISOString(),
-  }
-];
-
 export default function GaleriPage() {
   const [category, setCategory] = useState('Semua');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [data, setData] = useState<Gallery[]>(DEFAULT_GALLERY);
+  const [data, setData] = useState<Gallery[]>([]);
   const [loading, setLoading] = useState(true);
   const [bannerPhoto, setBannerPhoto] = useState<string | null>(null);
 
@@ -125,17 +50,11 @@ export default function GaleriPage() {
         if (res.success && res.data && res.data.length > 0) {
           setData(res.data);
         } else {
-          const filtered = category === 'Semua' 
-            ? DEFAULT_GALLERY 
-            : DEFAULT_GALLERY.filter(item => item.category === category);
-          setData(filtered);
+          setData([]);
         }
       })
       .catch(() => {
-        const filtered = category === 'Semua' 
-          ? DEFAULT_GALLERY 
-          : DEFAULT_GALLERY.filter(item => item.category === category);
-        setData(filtered);
+        setData([]);
       })
       .finally(() => setLoading(false));
   }, [category]);
