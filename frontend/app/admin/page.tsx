@@ -8,6 +8,7 @@ import {
   CheckCircle, Clock, XCircle, BarChart3
 } from 'lucide-react'
 import { get } from '@/lib/api'
+import { getSettings, saveSettings } from '@/lib/firestore'
 import Link from 'next/link'
 
 interface DashboardStats {
@@ -34,52 +35,45 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     let cancelled = false
-    
     const fetchDashboardData = async () => {
-      const token = localStorage.getItem('admin_token')
-      if (!token) return // stop jika tidak ada token
-
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-        const [statsRes, ppdbRes] = await Promise.all([
-          fetch(`${apiUrl}/api/admin/stats`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }),
-          fetch(`${apiUrl}/api/ppdb`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }).catch(() => null)
-        ])
-        
-        if (cancelled) return
-        
-        if (statsRes && statsRes.ok) {
-          const statsData = await statsRes.json()
-          if (statsData && statsData.success) {
-            setStats(statsData.data || {
-              totalPpdb: 0,
-              totalNews: 0,
-              totalGallery: 0,
-              totalConsultation: 0,
-              pendingPpdb: 0,
-              unansweredConsultation: 0
-            })
+      // 1️⃣ Coba ambil stats dari Firestore
+      const fsStats = await getSettings('admin_stats');
+      if (fsStats) {
+        setStats(fsStats as DashboardStats);
+      }
+      // 2️⃣ Jika tidak ada atau ingin sync, panggil backend (opsional, non‑blocking)
+      const token = localStorage.getItem('admin_token');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      if (token) {
+        try {
+          const res = await fetch(`${apiUrl}/api/admin/stats`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const data = await res.json();
+          if (data && data.success) {
+            setStats(data.data);
+            // Simpan ke Firestore agar selanjutnya gunakan data lokal
+            await saveSettings('admin_stats', data.data);
           }
-        }
-        
-        if (ppdbRes && ppdbRes.ok) {
-          const ppdbData = await ppdbRes.json()
-          if (ppdbData && ppdbData.success) {
-            setRecentPpdb((ppdbData.data || []).slice(0, 5))
-          }
-        }
-      } catch (err) {
-        console.error('Failed to fetch dashboard data:', err)
-      } finally {
-        if (!cancelled) {
-          setLoading(false)
+        } catch (e) {
+          console.warn('Backend stats fetch failed, using Firestore data if any', e);
         }
       }
-    }
+      // 3️⃣ Ambil data PPDB terbaru (fallback to empty if backend not reachable)
+      try {
+        const ppdbRes = await fetch(`${apiUrl}/api/ppdb`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const ppdbData = await ppdbRes.json();
+        if (ppdbData && ppdbData.success) {
+          setRecentPpdb((ppdbData.data || []).slice(0, 5));
+        }
+      } catch (e) {
+        console.warn('Backend ppdb fetch failed, leaving recent list empty');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
     fetchDashboardData()
     return () => {
       cancelled = true
