@@ -27,6 +27,7 @@ import {
   Clock,
   MoreVertical
 } from 'lucide-react'
+import { Star } from 'lucide-react';
 import EditorLayout from '@/components/admin/EditorLayout'
 import SectionCard from '@/components/admin/SectionCard'
 import TabNav from '@/components/admin/TabNav'
@@ -52,8 +53,7 @@ interface NewsArticle {
   photoSubtitle?: string
   status: 'DRAFT' | 'PUBLISHED'
   publishedAt: string
-  views: number
-  createdAt: string
+  isFeatured?: boolean
 }
 
 interface CategoryItem {
@@ -324,6 +324,30 @@ export default function BeritaSettingsPage() {
     }
   }
 
+  const toggleFeatured = async (item: NewsArticle) => {
+    try {
+      const token = localStorage.getItem('admin_token')
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+      const res = await fetch(`${apiUrl}/api/news/${item.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ isFeatured: !item.isFeatured })
+      })
+      const data = await res.json()
+      if (data.success) {
+        toast.success(`Featured ${item.isFeatured ? 'dihapus' : 'ditetapkan'}!`)
+        fetchBerita()
+      } else {
+        toast.error('Gagal: ' + data.message)
+      }
+    } catch (err: any) {
+      toast.error('Error: ' + err.message)
+    }
+  }
+
   const updateSettings = (data: any) => {
     setSettings(prev => ({ ...prev, header: { ...prev.header, ...data } }))
     setIsDirty(true)
@@ -530,6 +554,7 @@ export default function BeritaSettingsPage() {
                   <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-widest">Berita</th>
                   <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-widest">Kategori</th>
                   <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-widest">Status</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-widest">Featured</th>
                   <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-widest">Info</th>
                   <th className="px-6 py-4 text-[10px] font-black uppercase text-gray-400 tracking-widest">Aksi</th>
                 </tr>
@@ -575,6 +600,15 @@ export default function BeritaSettingsPage() {
                         >
                           <div className={`w-1.5 h-1.5 rounded-full ${item.status === 'PUBLISHED' ? 'bg-green-600' : 'bg-amber-600'}`} />
                           {item.status}
+                        </button>
+                      </td>
+                      <td className="px-6 py-6">
+                        <button
+                          onClick={() => toggleFeatured(item)}
+                          className="p-2 rounded-full hover:bg-yellow-100"
+                          title={item.isFeatured ? 'Unset Featured' : 'Set as Featured'}
+                        >
+                          {item.isFeatured ? <Star className="w-4 h-4 text-yellow-500" /> : <Star className="w-4 h-4 text-gray-300" />}
                         </button>
                       </td>
                       <td className="px-6 py-6">
