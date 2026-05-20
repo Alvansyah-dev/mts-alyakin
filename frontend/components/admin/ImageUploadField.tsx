@@ -29,9 +29,13 @@ export default function ImageUploadField({
     setIsUploading(true)
     try {
       const token = localStorage.getItem('admin_token')
+      const adminMode = localStorage.getItem('admin_mode')
       
       if (!token) {
-        throw new Error('Silakan login ulang')
+        if (adminMode === 'firestore_only') {
+          throw new Error('Fitur upload gambar membutuhkan Backend API yang sedang aktif. Silakan jalankan/hosting backend Anda terlebih dahulu.')
+        }
+        throw new Error('Sesi Anda telah habis. Silakan login ulang')
       }
       
       const formData = new FormData()
