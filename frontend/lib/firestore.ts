@@ -5,6 +5,7 @@ import {
 import { db } from './firebase'
 
 export async function getSettings(key: string) {
+  if (!db) return null;
   try {
     const snap = await getDoc(doc(db as any, 'siteSettings', key))
     if (snap.exists()) {
@@ -21,6 +22,10 @@ export async function saveSettings(
   key: string, 
   data: any
 ): Promise<boolean> {
+  if (!db) {
+    console.warn('saveSettings: db is null (missing env vars?)');
+    return false;
+  }
   try {
     await setDoc(
       doc(db as any, 'siteSettings', key),
@@ -41,9 +46,14 @@ export function listenSettings(
   key: string,
   callback: (data: any) => void
 ): () => void {
+  if (!db) {
+    console.warn('listenSettings: db is null (missing env vars?)');
+    callback(null);
+    return () => {};
+  }
   try {
     return onSnapshot(
-      doc(db, 'siteSettings', key),
+      doc(db as any, 'siteSettings', key),
       (snap) => {
         callback(snap.exists() ? snap.data() : null)
       },
