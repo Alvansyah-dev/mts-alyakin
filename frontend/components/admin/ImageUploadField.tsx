@@ -41,7 +41,7 @@ export default function ImageUploadField({
       if (!res.ok || !data.success) {
         throw new Error(data?.error?.message || 'ImgBB upload failed')
       }
-      const imageUrl = data.data.url.replace(/^http:/, 'https:')
+      const imageUrl = data.data.url.replace(/^https?:\/\/i\.ibb\.co/, '/imgbb')
       onChange(imageUrl, data.data.id)
       setIsUploading(false)
       return

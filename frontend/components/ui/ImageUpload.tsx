@@ -57,8 +57,9 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ name, maxSizeMB = 5, a
           },
         });
         // On success, set preview to the returned URL and update form value
-        const url = response.data?.data?.url;
+        let url = response.data?.data?.url;
         if (url) {
+          url = url.replace(/^https?:\/\/i\.ibb\.co/, '/imgbb');
           setPreview(url);
           setValue(name, url, { shouldValidate: true });
         }

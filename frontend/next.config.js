@@ -8,6 +8,14 @@ const nextConfig = {
             { protocol: 'https', hostname: 'i.ibb.co' },
         ],
     },
+    async rewrites() {
+        return [
+            {
+                source: '/imgbb/:path*',
+                destination: 'https://i.ibb.co/:path*',
+            },
+        ]
+    },
     env: {
         NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
         NEXT_PUBLIC_SITE_NAME: process.env.NEXT_PUBLIC_SITE_NAME,
