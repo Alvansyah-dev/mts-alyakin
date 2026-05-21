@@ -67,6 +67,7 @@ interface FooterSettings {
     facebook: string
     youtube: string
     twitter: string
+    mapUrl?: string
   }
   quickLinks: FooterLink[]
   operatingHours: JamOperasional[]
@@ -95,7 +96,8 @@ const DEFAULT_FOOTER: FooterSettings = {
     instagram: 'mtsalyakin',
     facebook: 'mtsalyakinofficial',
     youtube: 'mtsalyakintv',
-    twitter: 'mtsalyakin'
+    twitter: 'mtsalyakin',
+    mapUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d126646.20960533687!2d112.6302821!3d-7.2756141!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7fbf8381ac47f%3A0x3027a76e352be40!2sSurabaya%2C%20East%20Java!5e0!3m2!1sen!2sid!4v1715610000000!5m2!1sen!2sid'
   },
   quickLinks: [
     { name: 'Beranda', url: '/' },
@@ -226,7 +228,13 @@ export default function FooterSettingsPage() {
   }
 
   const updateSection = (section: keyof FooterSettings, data: any) => {
-    setSettings(prev => ({ ...prev, [section]: { ...prev[section], ...data } }))
+    setSettings(prev => {
+      const isArray = Array.isArray(prev[section]);
+      return { 
+        ...prev, 
+        [section]: isArray ? data : { ...prev[section], ...data } 
+      }
+    })
     setIsDirty(true)
   }
 
@@ -414,6 +422,16 @@ export default function FooterSettingsPage() {
                         <label className="text-xs font-black uppercase text-gray-400">Email</label>
                         <input value={settings.contact.email} onChange={(e) => updateSection('contact', { email: e.target.value })} className="w-full px-4 py-3 rounded-2xl border" />
                      </div>
+                  </div>
+                  <div className="space-y-2 mt-4">
+                     <label className="text-xs font-black uppercase text-gray-400">URL Embed Google Maps</label>
+                     <p className="text-[10px] text-gray-400 font-medium">Buka Google Maps {'>'} Bagikan {'>'} Sematkan Peta {'>'} Copy URL pada atribut src="..."</p>
+                     <textarea 
+                       value={settings.contact.mapUrl || ''} 
+                       onChange={(e) => updateSection('contact', { mapUrl: e.target.value })}
+                       className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-xs text-gray-500"
+                       rows={3}
+                     />
                   </div>
                </div>
             </SectionCard>

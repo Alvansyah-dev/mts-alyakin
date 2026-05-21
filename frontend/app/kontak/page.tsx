@@ -1,7 +1,7 @@
 // app/kontak/page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import SectionBanner from '@/components/ui/SectionBanner';
 import { MapPin, Phone, Mail, Clock, Send, MessageCircle } from 'lucide-react';
@@ -10,6 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
+import { getSettings } from '@/lib/firestore';
 
 const contactSchema = z.object({
   name: z.string().min(3, 'Nama minimal 3 karakter'),
@@ -23,6 +24,19 @@ type ContactFormData = z.infer<typeof contactSchema>;
 export default function KontakPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [settings, setSettings] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const data = await getSettings('footer');
+        if (data) setSettings(data);
+      } catch (error) {
+        console.error("Failed to load settings", error);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema)
@@ -49,12 +63,20 @@ export default function KontakPage() {
     }
   };
 
-  const contactInfo = [
-    { icon: MapPin, label: 'Alamat Lengkap', value: 'Jl. Pendidikan No. 1, Kel. Sukamaju, Kec. Jombang, Kota Surabaya, Jawa Timur 60225' },
-    { icon: Phone, label: 'Telepon / Fax', value: '(031) 876-5432' },
-    { icon: Mail, label: 'Email Resmi', value: 'info@mtsalyakin.sch.id' },
-    { icon: Clock, label: 'Jam Operasional', value: 'Senin - Sabtu: 07.00 - 16.00 WIB\n(Jumat buka setengah hari)' },
+  const contactInfo = settings ? [
+    { icon: MapPin, label: 'Alamat Lengkap', value: settings.contact?.address || '-' },
+    { icon: Phone, label: 'Telepon / Fax', value: settings.contact?.phone || '-' },
+    { icon: Mail, label: 'Email Resmi', value: settings.contact?.email || '-' },
+    { icon: Clock, label: 'Jam Operasional', value: settings.operatingHours?.filter((h: any) => h.status === 'buka').map((h: any) => `${h.hari}: ${h.jamBuka} - ${h.jamTutup}`).join('\n') || '-' },
+  ] : [
+    { icon: MapPin, label: 'Alamat Lengkap', value: 'Memuat...' },
+    { icon: Phone, label: 'Telepon / Fax', value: 'Memuat...' },
+    { icon: Mail, label: 'Email Resmi', value: 'Memuat...' },
+    { icon: Clock, label: 'Jam Operasional', value: 'Memuat...' },
   ];
+
+  const whatsappPhone = settings?.contact?.whatsapp || '6281234567890';
+  const mapUrl = settings?.contact?.mapUrl || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d126646.20960533687!2d112.6302821!3d-7.2756141!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7fbf8381ac47f%3A0x3027a76e352be40!2sSurabaya%2C%20East%20Java!5e0!3m2!1sen!2sid!4v1715610000000!5m2!1sen!2sid";
 
   return (
     <main className="pb-20 bg-bg-primary min-h-screen">
@@ -99,7 +121,7 @@ export default function KontakPage() {
               transition={{ delay: 0.5 }}
             >
               <a 
-                href="https://wa.me/6281234567890?text=Halo%20Admin%20MTs%20Al-Yakin,%20saya%20ingin%20bertanya" 
+                href={`https://wa.me/${whatsappPhone}?text=Halo%20Admin%20MTs%20Al-Yakin,%20saya%20ingin%20bertanya`} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="w-full flex items-center justify-center p-4 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold transition-all shadow-md hover:shadow-lg transform hover:-translate-y-1"
@@ -202,24 +224,30 @@ export default function KontakPage() {
             <h2 className="text-2xl font-bold text-text-primary">Lokasi Sekolah</h2>
             <div className="w-16 h-1 bg-accent mx-auto mt-2 rounded-full"></div>
           </div>
-          <Card className="overflow-hidden h-[400px] relative rounded-2xl shadow-md border-0 p-0">
+          <Card className="overflow-hidden h-[400px] relative rounded-2xl shadow-md border-0 p-0 bg-gray-100">
             {/* Using a generic map embed for demo purposes since we don't have a specific lat/lng */}
-            <iframe 
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d126646.20960533687!2d112.6302821!3d-7.2756141!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7fbf8381ac47f%3A0x3027a76e352be40!2sSurabaya%2C%20East%20Java!5e0!3m2!1sen!2sid!4v1715610000000!5m2!1sen!2sid" 
-              width="100%" 
-              height="100%" 
-              style={{ border: 0 }} 
-              allowFullScreen={true} 
-              loading="lazy" 
-              referrerPolicy="no-referrer-when-downgrade"
-              title="Peta Lokasi MTs Al-Yakin"
-              className="absolute inset-0 grayscale-[20%] contrast-125 opacity-90 hover:grayscale-0 hover:opacity-100 transition-all duration-500"
-            ></iframe>
+            {settings ? (
+              <iframe 
+                src={mapUrl} 
+                width="100%" 
+                height="100%" 
+                style={{ border: 0 }} 
+                allowFullScreen={true} 
+                loading="lazy" 
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Peta Lokasi MTs Al-Yakin"
+                className="absolute inset-0 grayscale-[20%] contrast-125 opacity-90 hover:grayscale-0 hover:opacity-100 transition-all duration-500"
+              ></iframe>
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                Memuat Peta...
+              </div>
+            )}
           </Card>
           <div className="text-center mt-6">
             <Button variant="outline" asChild>
-              <a href="https://maps.google.com/?q=Surabaya" target="_blank" rel="noopener noreferrer">
-                <MapPin className="w-4 h-4 mr-2" /> Buka di Google Maps
+              <a href={mapUrl} target="_blank" rel="noopener noreferrer">
+                <MapPin className="w-4 h-4 mr-2" /> Buka Peta Ukuran Penuh
               </a>
             </Button>
           </div>
