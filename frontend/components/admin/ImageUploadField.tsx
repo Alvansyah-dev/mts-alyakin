@@ -28,54 +28,33 @@ export default function ImageUploadField({
 
     setIsUploading(true)
     try {
-      // 1. Coba upload ke Firebase Storage secara langsung
-      const { getStorage, ref, uploadBytes, getDownloadURL } = await import('firebase/storage')
-      const app = (await import('@/lib/firebase')).default
-      
-      if (!app) {
-        throw new Error('Firebase belum diinisialisasi. Cek konfigurasi env Anda.')
+      // 1. Upload menggunakan ImgBB (Gratis, Tanpa Kartu Kredit)
+      const imgbbKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+      if (imgbbKey) {
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
+          method: 'POST',
+          body: formData,
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+          onChange(data.data.url, data.data.id);
+          setIsUploading(false);
+          return;
+        } else {
+          throw new Error(data.error?.message || 'ImgBB upload gagal');
+        }
       }
-
-      const storage = getStorage(app)
-      const fileName = `mts-alyakin/uploads/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`
-      const storageRef = ref(storage, fileName)
       
-      // Upload file
-      const snapshot = await uploadBytes(storageRef, file)
-      const downloadURL = await getDownloadURL(snapshot.ref)
-      
-      onChange(downloadURL, fileName)
+      // Jika tidak ada ImgBB Key, beritahu user
+      throw new Error('Kunci ImgBB tidak ditemukan di Vercel/Env. Silakan ikuti panduan chat.');
       
     } catch (err: any) {
       console.error('Firebase Storage Error:', err)
-      
-      // Fallback ke API backend jika gagal (untuk kompatibilitas)
-      try {
-        const token = localStorage.getItem('admin_token')
-        const adminMode = localStorage.getItem('admin_mode')
-        
-        if (!token && adminMode === 'firestore_only') {
-          throw new Error('Upload gagal: Firebase Storage error dan Backend API tidak aktif.')
-        }
-        
-        const formData = new FormData()
-        formData.append('file', file)
-        formData.append('folder', 'mts-alyakin')
-        
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-        const res = await fetch(`${apiUrl}/api/upload/image`, {
-          method: 'POST',
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-          body: formData,
-        })
-        
-        const data = await res.json()
-        if (!res.ok || !data.success) throw new Error(data.message || 'Upload gagal')
-        
-        onChange(data.data.url, data.data.publicId)
-      } catch (fallbackErr: any) {
-        alert(err.message || 'Gagal mengunggah gambar.') 
-      }
+      alert(err.message || 'Gagal mengunggah gambar ke Firebase Storage.')
     } finally {
       setIsUploading(false)
     }
