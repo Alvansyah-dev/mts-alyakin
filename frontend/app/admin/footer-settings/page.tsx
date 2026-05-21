@@ -184,9 +184,8 @@ export default function FooterSettingsPage() {
     setIsSaving(true)
     try {
       // Cek auth dulu
-      const { getAuth } = await import('firebase/auth')
-      const auth = getAuth()
-      const user = auth.currentUser
+      const { auth } = await import('@/lib/firebase')
+      const user = auth?.currentUser
       
       if (!user) {
         toast.error('Sesi habis. Silakan login ulang.')
