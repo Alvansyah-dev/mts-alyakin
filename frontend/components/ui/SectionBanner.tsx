@@ -31,7 +31,7 @@ export default function SectionBanner({
     >
       {/* Overlay */}
       <div className={`absolute inset-0 ${
-        hasImage ? 'bg-black/55' : 'bg-black/10'
+        hasImage ? 'bg-black/30' : 'bg-black/10'
       }`} />
 
       {/* Dekoratif dots (hanya jika tidak ada foto) */}
