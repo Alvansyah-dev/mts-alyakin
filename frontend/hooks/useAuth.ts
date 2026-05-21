@@ -55,6 +55,18 @@ export const useAuth = () => {
     console.warn('Backend login gagal – beralih ke mode Firestore‑only');
     localStorage.setItem('admin_mode', 'firestore_only');
     
+    // Coba sign in ke Firebase Auth agar bisa upload gambar ke Storage
+    try {
+      const { getAuth, signInWithEmailAndPassword } = await import('firebase/auth');
+      const app = (await import('@/lib/firebase')).default;
+      if (app) {
+        const auth = getAuth(app);
+        await signInWithEmailAndPassword(auth, email, password);
+      }
+    } catch (fbErr) {
+      console.warn('Firebase auth failed, but continuing with mock admin:', fbErr);
+    }
+    
     // Karena backend tidak tersedia, kita mock data admin agar UI bisa masuk
     const mockAdmin = {
       id: 'local_admin',
