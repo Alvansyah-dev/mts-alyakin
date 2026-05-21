@@ -72,16 +72,15 @@ export default function WhatsappSettingsPage() {
 
     setIsSaving(true)
     try {
-      // Cek auth dari localStorage
-      const adminUserStr = typeof window !== 'undefined' ? localStorage.getItem('admin_user') : null;
-      if (!adminUserStr) {
-        toast.error('Sesi habis. Silakan login ulang.')
+      // Verify admin session via Firebase Auth
+      const adminUser = await getAdminUser();
+      if (!adminUser) {
+        toast.error('Sesi habis. Silakan login ulang.');
         setTimeout(() => {
-          window.location.href = '/admin/login'
-        }, 1500)
-        return
+          window.location.href = '/admin/login';
+        }, 1500);
+        return;
       }
-      const adminUser = JSON.parse(adminUserStr)
       
       // Simpan ke Firestore
       const { doc, setDoc } = await import('firebase/firestore')
