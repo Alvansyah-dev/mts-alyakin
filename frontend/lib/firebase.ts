@@ -12,10 +12,7 @@ const firebaseConfig = {
 };
 
 // Safe Firebase initialization
-const app = typeof window !== 'undefined' && firebaseConfig.apiKey
-  ? (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp())
-  : null;
-
-export const auth = app ? getAuth(app) : null;
-export const db = app ? getFirestore(app) : null;
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
 export default app;

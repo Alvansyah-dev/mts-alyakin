@@ -6,7 +6,7 @@ import { db } from './firebase'
 
 export async function getSettings(key: string) {
   try {
-    const snap = await getDoc(doc(db, 'siteSettings', key))
+    const snap = await getDoc(doc(db as any, 'siteSettings', key))
     if (snap.exists()) {
       return snap.data()
     }
@@ -23,7 +23,7 @@ export async function saveSettings(
 ): Promise<boolean> {
   try {
     await setDoc(
-      doc(db, 'siteSettings', key),
+      doc(db as any, 'siteSettings', key),
       {
         ...data,
         updatedAt: new Date().toISOString()
