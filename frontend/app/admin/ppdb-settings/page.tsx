@@ -152,32 +152,45 @@ export default function PpdbSettingsPage() {
   const handleSaveSettings = async () => {
     setIsSaving(true)
     try {
-      const token = localStorage.getItem('admin_token')
-      if (!token) {
-        alert('Sesi habis. Silakan login ulang.')
-        window.location.href = '/admin/login'
+      // Cek auth dulu
+      const { getAuth } = await import('firebase/auth')
+      const auth = getAuth()
+      const user = auth.currentUser
+      
+      if (!user) {
+        toast.error('Sesi habis. Silakan login ulang.')
+        setTimeout(() => {
+          window.location.href = '/admin/login'
+        }, 1500)
         return
       }
       
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-      const res = await fetch(`${apiUrl}/api/settings/ppdb`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(settings)
-      })
+      // Simpan ke Firestore
+      const { doc, setDoc } = await import('firebase/firestore')
+      const { db } = await import('@/lib/firebase')
       
-      const data = await res.json()
-      if (data.success) {
-        setIsDirty(false)
-        toast.success('Pengaturan PPDB disimpan!')
+      await setDoc(
+        doc(db, 'siteSettings', 'ppdb'),
+        {
+          ...settings,
+          updatedAt: new Date().toISOString(),
+          updatedBy: user.email
+        },
+        { merge: true }
+      )
+      
+      setIsDirty(false)
+      toast.success('✅ Pengaturan berhasil disimpan!')
+      
+    } catch (error: any) {
+      console.error('Save error:', error)
+      
+      if (error.code === 'permission-denied') {
+        toast.error('❌ Akses ditolak. Coba login ulang.')
       } else {
-        toast.error('Gagal menyimpan: ' + data.message)
+        toast.error('❌ Gagal menyimpan: ' + 
+          (error.message || 'Unknown error'))
       }
-    } catch (err) {
-      toast.error('Gagal menyimpan.')
     } finally {
       setIsSaving(false)
     }

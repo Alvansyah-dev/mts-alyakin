@@ -1,51 +1,59 @@
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
-import { db } from './firebase';
+import { 
+  doc, getDoc, setDoc, onSnapshot,
+  collection, getDocs, query, orderBy
+} from 'firebase/firestore'
+import { db } from './firebase'
 
-// Safe helper to get settings
 export async function getSettings(key: string) {
-  if (!db) return null;
   try {
-    const snap = await getDoc(doc(db, 'siteSettings', key));
-    return snap.exists() ? snap.data() : null;
-  } catch (err) {
-    console.error(`Firestore getSettings error for key ${key}:`, err);
-    return null;
+    const snap = await getDoc(doc(db, 'siteSettings', key))
+    if (snap.exists()) {
+      return snap.data()
+    }
+    return null
+  } catch (error) {
+    console.error('getSettings error:', error)
+    return null
   }
 }
 
-// Safe helper to save settings
-export async function saveSettings(key: string, data: any) {
-  if (!db) {
-    console.error('Firestore db is not initialized. Cannot save settings.');
-    return false;
-  }
+export async function saveSettings(
+  key: string, 
+  data: any
+): Promise<boolean> {
   try {
-    await setDoc(doc(db, 'siteSettings', key), data, { merge: true });
-    return true;
-  } catch (e) {
-    console.error('Firestore save error:', e);
-    return false;
+    await setDoc(
+      doc(db, 'siteSettings', key),
+      {
+        ...data,
+        updatedAt: new Date().toISOString()
+      },
+      { merge: true }
+    )
+    return true
+  } catch (error: any) {
+    console.error('saveSettings error:', error)
+    throw error
   }
 }
 
-// Safe helper to listen settings (realtime)
-export function listenSettings(key: string, callback: (data: any) => void) {
-  if (!db) {
-    callback(null);
-    return () => {};
-  }
+export function listenSettings(
+  key: string,
+  callback: (data: any) => void
+): () => void {
   try {
     return onSnapshot(
       doc(db, 'siteSettings', key),
-      (snap) => callback(snap.exists() ? snap.data() : null),
-      (err) => {
-        console.error('Firestore listen error:', err);
-        callback(null);
+      (snap) => {
+        callback(snap.exists() ? snap.data() : null)
+      },
+      (error) => {
+        console.error('listenSettings error:', error)
+        callback(null)
       }
-    );
-  } catch (err) {
-    console.error('Firestore listen initial error:', err);
-    callback(null);
-    return () => {};
+    )
+  } catch (error) {
+    console.error('listenSettings setup error:', error)
+    return () => {}
   }
 }

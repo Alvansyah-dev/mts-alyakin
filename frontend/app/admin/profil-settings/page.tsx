@@ -197,38 +197,48 @@ export default function ProfilSettingsPage() {
   const handleSave = async () => {
     setIsSaving(true)
     try {
-      // 1. Save to Firestore (always works in production)
-      const firestoreOk = await saveSettings('profile', settings);
-
-      // 2. Try saving to backend (optional, non-blocking)
-      try {
-        const token = localStorage.getItem('admin_token');
-        if (token) {
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-          await fetch(`${apiUrl}/api/settings/profile`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(settings)
-          });
-        }
-      } catch (err) {
-        console.warn('Backend save failed, Firestore save is okay:', err);
+      // Cek auth dulu
+      const { getAuth } = await import('firebase/auth')
+      const auth = getAuth()
+      const user = auth.currentUser
+      
+      if (!user) {
+        toast.error('Sesi habis. Silakan login ulang.')
+        setTimeout(() => {
+          window.location.href = '/admin/login'
+        }, 1500)
+        return
       }
-
-      if (firestoreOk) {
-        setIsDirty(false);
-        setLastSaved(new Date());
-        toast.success('Profil sekolah berhasil diperbarui!');
+      
+      // Simpan ke Firestore
+      const { doc, setDoc } = await import('firebase/firestore')
+      const { db } = await import('@/lib/firebase')
+      
+      await setDoc(
+        doc(db, 'siteSettings', 'profile'),
+        {
+          ...settings,
+          updatedAt: new Date().toISOString(),
+          updatedBy: user.email
+        },
+        { merge: true }
+      )
+      
+      setIsDirty(false)
+      if (typeof setLastSaved === 'function') setLastSaved(new Date())
+      toast.success('✅ Pengaturan berhasil disimpan!')
+      
+    } catch (error: any) {
+      console.error('Save error:', error)
+      
+      if (error.code === 'permission-denied') {
+        toast.error('❌ Akses ditolak. Coba login ulang.')
       } else {
-        toast.error('Gagal menyimpan. Coba lagi.');
+        toast.error('❌ Gagal menyimpan: ' + 
+          (error.message || 'Unknown error'))
       }
-    } catch (err: any) {
-      toast.error('Error: ' + err.message);
     } finally {
-      setIsSaving(false);
+      setIsSaving(false)
     }
   }
 
