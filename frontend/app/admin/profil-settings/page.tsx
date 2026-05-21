@@ -197,17 +197,16 @@ export default function ProfilSettingsPage() {
   const handleSave = async () => {
     setIsSaving(true)
     try {
-      // Cek auth dulu
-      const { auth } = await import('@/lib/firebase')
-      const user = auth?.currentUser
-      
-      if (!user) {
+      // Cek auth dari localStorage
+      const adminUserStr = typeof window !== 'undefined' ? localStorage.getItem('admin_user') : null;
+      if (!adminUserStr) {
         toast.error('Sesi habis. Silakan login ulang.')
         setTimeout(() => {
           window.location.href = '/admin/login'
         }, 1500)
         return
       }
+      const adminUser = JSON.parse(adminUserStr)
       
       // Simpan ke Firestore
       const { doc, setDoc } = await import('firebase/firestore')
@@ -218,7 +217,7 @@ export default function ProfilSettingsPage() {
         {
           ...settings,
           updatedAt: new Date().toISOString(),
-          updatedBy: user.email
+          updatedBy: adminUser.email
         },
         { merge: true }
       )
