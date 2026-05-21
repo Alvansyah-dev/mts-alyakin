@@ -20,7 +20,6 @@ export default function ImageUploadField({
   aspectRatio = 'video'
 }: ImageUploadFieldProps) {
   const [isUploading, setIsUploading] = useState(false)
-  const [preview, setPreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,34 +29,22 @@ export default function ImageUploadField({
     setIsUploading(true)
     try {
       // Upload directly to ImgBB
+      const formData = new FormData();
+      formData.append('image', file);
+      
       const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY || '3d2dd4b825ab1634c42a9f06e8b3f6e4';
-        // Convert file to base64 string for ImgBB API
-        const toBase64 = (file: File) =>
-          new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-              const result = reader.result as string;
-              // result is like 'data:image/png;base64,AAA...'
-              const base64 = result.split(',')[1];
-              resolve(base64);
-            };
-            reader.onerror = (e) => reject(e);
-            reader.readAsDataURL(file);
-          });
-        const base64 = await toBase64(file);
-        const formData = new FormData();
-        formData.append('image', base64);
-        const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-          method: 'POST',
-          body: formData,
-        });
-        const data = await res.json();
-        if (!res.ok || !data.success) {
-          throw new Error(data?.error?.message || 'ImgBB upload failed');
-        }
-        const imageUrl = data.data.url.replace(/^http:/, 'https:');
-        onChange(imageUrl, data.data.id);
-        setPreview(imageUrl);
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+        method: 'POST',
+        body: formData,
+      })
+      const data = await res.json()
+      if (!res.ok || !data.success) {
+        throw new Error(data?.error?.message || 'ImgBB upload failed')
+      }
+      const imageUrl = data.data.url.replace(/^http:/, 'https:')
+      onChange(imageUrl, data.data.id)
+      setIsUploading(false)
+      return
       
     } catch (err: any) {
       console.error("Upload error details:", err);
@@ -90,7 +77,7 @@ export default function ImageUploadField({
         `}
       >
         <AnimatePresence mode="wait">
-          {value || preview ? (
+          {value ? (
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -98,7 +85,7 @@ export default function ImageUploadField({
               className="relative w-full h-full"
             >
               <img 
-                src={value || preview || ''} 
+                src={value} 
                 alt="Upload preview" 
                 className="w-full h-full object-cover"
               />
@@ -112,7 +99,7 @@ export default function ImageUploadField({
                 </button>
                 <button
                   type="button"
-                  onClick={(e) => { e.preventDefault(); onChange(''); setPreview(''); }}
+                  onClick={(e) => { e.preventDefault(); onChange(''); }}
                   className="p-3 bg-red-600 text-white rounded-full hover:scale-110 transition-transform shadow-xl"
                 >
                   <X className="w-5 h-5" />
