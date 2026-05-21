@@ -28,19 +28,20 @@ export default function ImageUploadField({
 
     setIsUploading(true)
     try {
-      // Upload via internal API route
+      // Upload directly to ImgBB
       const formData = new FormData();
       formData.append('image', file);
       
-      const res = await fetch('/api/upload/image', {
+      const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
         method: 'POST',
         body: formData,
       })
       const data = await res.json()
-      if (!res.ok) {
-        throw new Error(data.error || 'ImgBB upload failed')
+      if (!res.ok || !data.success) {
+        throw new Error(data?.error?.message || 'ImgBB upload failed')
       }
-      onChange(data.url, data.publicId)
+      onChange(data.data.url, data.data.id)
       setIsUploading(false)
       return
       

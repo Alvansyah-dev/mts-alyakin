@@ -50,13 +50,14 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ name, maxSizeMB = 5, a
     form.append('image', file);
     setUploading(true);
       try {
-        const response = await axios.post('/api/upload/image', form, {
+        const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+        const response = await axios.post(`https://api.imgbb.com/1/upload?key=${apiKey}`, form, {
           onUploadProgress: (p) => {
             if (p.total) setProgress(Math.round((p.loaded * 100) / p.total));
           },
         });
         // On success, set preview to the returned URL and update form value
-        const { url } = response.data;
+        const url = response.data?.data?.url;
         if (url) {
           setPreview(url);
           setValue(name, url, { shouldValidate: true });
