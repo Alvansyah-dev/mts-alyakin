@@ -28,48 +28,54 @@ export default function ImageUploadField({
 
     setIsUploading(true)
     try {
-      const token = localStorage.getItem('admin_token')
-      const adminMode = localStorage.getItem('admin_mode')
+      // 1. Coba upload ke Firebase Storage secara langsung
+      const { getStorage, ref, uploadBytes, getDownloadURL } = await import('firebase/storage')
+      const app = (await import('@/lib/firebase')).default
       
-      if (!token) {
-        if (adminMode === 'firestore_only') {
-          throw new Error('Fitur upload gambar membutuhkan Backend API yang sedang aktif. Silakan jalankan/hosting backend Anda terlebih dahulu.')
-        }
-        throw new Error('Sesi Anda telah habis. Silakan login ulang')
+      if (!app) {
+        throw new Error('Firebase belum diinisialisasi. Cek konfigurasi env Anda.')
       }
+
+      const storage = getStorage(app)
+      const fileName = `mts-alyakin/uploads/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`
+      const storageRef = ref(storage, fileName)
       
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('folder', 'mts-alyakin')
+      // Upload file
+      const snapshot = await uploadBytes(storageRef, file)
+      const downloadURL = await getDownloadURL(snapshot.ref)
       
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-      
-      const res = await fetch(`${apiUrl}/api/upload/image`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          // JANGAN tambahkan Content-Type untuk FormData
-        },
-        body: formData,
-      })
-      
-      // Cek apakah response adalah JSON
-      const contentType = res.headers.get('content-type')
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await res.text()
-        throw new Error(`Server error: ${text.substring(0, 100)}`)
-      }
-      
-      const data = await res.json()
-      
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || 'Upload gagal')
-      }
-      
-      onChange(data.data.url, data.data.publicId)
+      onChange(downloadURL, fileName)
       
     } catch (err: any) {
-      alert(err.message || 'Upload gagal') // temporary untuk debug
+      console.error('Firebase Storage Error:', err)
+      
+      // Fallback ke API backend jika gagal (untuk kompatibilitas)
+      try {
+        const token = localStorage.getItem('admin_token')
+        const adminMode = localStorage.getItem('admin_mode')
+        
+        if (!token && adminMode === 'firestore_only') {
+          throw new Error('Upload gagal: Firebase Storage error dan Backend API tidak aktif.')
+        }
+        
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('folder', 'mts-alyakin')
+        
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+        const res = await fetch(`${apiUrl}/api/upload/image`, {
+          method: 'POST',
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+          body: formData,
+        })
+        
+        const data = await res.json()
+        if (!res.ok || !data.success) throw new Error(data.message || 'Upload gagal')
+        
+        onChange(data.data.url, data.data.publicId)
+      } catch (fallbackErr: any) {
+        alert(err.message || 'Gagal mengunggah gambar.') 
+      }
     } finally {
       setIsUploading(false)
     }
