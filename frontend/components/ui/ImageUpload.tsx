@@ -50,7 +50,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ name, maxSizeMB = 5, a
     form.append('image', file);
     setUploading(true);
       try {
-        const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+        const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY || '3d2dd4b825ab1634c42a9f06e8b3f6e4';
         const response = await axios.post(`https://api.imgbb.com/1/upload?key=${apiKey}`, form, {
           onUploadProgress: (p) => {
             if (p.total) setProgress(Math.round((p.loaded * 100) / p.total));

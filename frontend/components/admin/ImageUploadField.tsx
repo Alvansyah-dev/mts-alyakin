@@ -32,7 +32,7 @@ export default function ImageUploadField({
       const formData = new FormData();
       formData.append('image', file);
       
-      const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+      const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY || '3d2dd4b825ab1634c42a9f06e8b3f6e4';
       const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
         method: 'POST',
         body: formData,
@@ -46,7 +46,8 @@ export default function ImageUploadField({
       return
       
     } catch (err: any) {
-      alert(err.message || 'Gagal mengunggah gambar ke Firebase Storage.')
+      console.error("Upload error details:", err);
+      alert(err.message || 'Gagal mengunggah gambar ke ImgBB.')
     } finally {
       setIsUploading(false)
     }
