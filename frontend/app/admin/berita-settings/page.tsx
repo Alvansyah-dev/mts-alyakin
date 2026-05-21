@@ -27,7 +27,6 @@ import {
   Clock,
   MoreVertical
 } from 'lucide-react'
-import { Star } from 'lucide-react';
 import EditorLayout from '@/components/admin/EditorLayout'
 import SectionCard from '@/components/admin/SectionCard'
 import TabNav from '@/components/admin/TabNav'
@@ -54,6 +53,7 @@ interface NewsArticle {
   status: 'DRAFT' | 'PUBLISHED'
   publishedAt: string
   isFeatured?: boolean
+  views?: number
 }
 
 interface CategoryItem {

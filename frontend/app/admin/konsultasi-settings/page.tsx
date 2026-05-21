@@ -133,7 +133,7 @@ export default function KonsultasiSettingsPage() {
       const { db } = await import('@/lib/firebase')
       
       await setDoc(
-        doc(db, 'siteSettings', 'consultation'),
+        doc(db as any, 'siteSettings', 'consultation'),
         {
           ...settings,
           updatedAt: new Date().toISOString(),

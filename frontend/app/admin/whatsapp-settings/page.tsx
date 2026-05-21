@@ -103,7 +103,7 @@ export default function WhatsappSettingsPage() {
       const { db } = await import('@/lib/firebase')
       
       await setDoc(
-        doc(db, 'siteSettings', 'whatsapp'),
+        doc(db as any, 'siteSettings', 'whatsapp'),
         {
           ...settings,
           updatedAt: new Date().toISOString(),

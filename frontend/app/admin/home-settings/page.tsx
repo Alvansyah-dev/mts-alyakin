@@ -279,7 +279,7 @@ export default function HomeSettingsPage() {
       const { db } = await import('@/lib/firebase')
       
       await setDoc(
-        doc(db, 'siteSettings', 'homepage'),
+        doc(db as any, 'siteSettings', 'homepage'),
         {
           ...settings,
           updatedAt: new Date().toISOString(),

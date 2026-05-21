@@ -124,7 +124,7 @@ export default function WebsiteSettingsPage() {
       const { db } = await import('@/lib/firebase')
       
       await setDoc(
-        doc(db, 'siteSettings', 'general'),
+        doc(db as any, 'siteSettings', 'general'),
         {
           ...settings,
           updatedAt: new Date().toISOString(),

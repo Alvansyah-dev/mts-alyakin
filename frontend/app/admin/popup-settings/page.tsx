@@ -101,7 +101,7 @@ export default function PopupSettingsPage() {
       const { db } = await import('@/lib/firebase')
       
       await setDoc(
-        doc(db, 'siteSettings', 'popup'),
+        doc(db as any, 'siteSettings', 'popup'),
         {
           ...settings,
           updatedAt: new Date().toISOString(),

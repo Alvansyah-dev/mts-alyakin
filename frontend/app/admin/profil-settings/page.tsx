@@ -215,7 +215,7 @@ export default function ProfilSettingsPage() {
       const { db } = await import('@/lib/firebase')
       
       await setDoc(
-        doc(db, 'siteSettings', 'profile'),
+        doc(db as any, 'siteSettings', 'profile'),
         {
           ...settings,
           updatedAt: new Date().toISOString(),

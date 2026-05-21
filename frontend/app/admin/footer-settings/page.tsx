@@ -199,7 +199,7 @@ export default function FooterSettingsPage() {
       const { db } = await import('@/lib/firebase')
       
       await setDoc(
-        doc(db, 'siteSettings', 'footer'),
+        doc(db as any, 'siteSettings', 'footer'),
         {
           ...settings,
           updatedAt: new Date().toISOString(),

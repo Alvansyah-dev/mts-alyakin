@@ -170,7 +170,7 @@ export default function PpdbSettingsPage() {
       const { db } = await import('@/lib/firebase')
       
       await setDoc(
-        doc(db, 'siteSettings', 'ppdb'),
+        doc(db as any, 'siteSettings', 'ppdb'),
         {
           ...settings,
           updatedAt: new Date().toISOString(),
