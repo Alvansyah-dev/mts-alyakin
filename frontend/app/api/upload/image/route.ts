@@ -12,8 +12,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'No image file provided' }, { status: 400 });
   }
 
+  const bytes = await file.arrayBuffer();
+  const base64Image = Buffer.from(bytes).toString('base64');
+
   const uploadForm = new FormData();
-  uploadForm.append('image', file);
+  uploadForm.append('image', base64Image);
 
   const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
     method: 'POST',
