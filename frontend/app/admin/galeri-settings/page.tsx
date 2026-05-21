@@ -98,15 +98,15 @@ export default function GallerySettingsPage() {
   const fetchData = async () => {
     setIsLoading(true)
     try {
-      const res = await get('/gallery')
-      const galleryItems = res?.data || res
+      const { getCollectionData } = await import('@/lib/firestore')
+      const galleryItems = await getCollectionData('gallery')
       if (Array.isArray(galleryItems)) {
-        setItems(galleryItems)
+        setItems(galleryItems as GalleryItem[])
 
         // Dynamically calculate category counts
         setCategories(prev => prev.map(cat => ({
           ...cat,
-          count: galleryItems.filter(item => item.category === cat.name).length
+          count: galleryItems.filter((item: any) => item.category === cat.name).length
         })))
       }
     } catch (err) {
@@ -170,6 +170,15 @@ export default function GallerySettingsPage() {
     const idleItems = uploadQueue.filter(item => item.status === 'IDLE')
     if (idleItems.length === 0) return
 
+    const { doc, setDoc } = await import('firebase/firestore')
+    const { db } = await import('@/lib/firebase')
+    const imgbbKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+
+    if (!imgbbKey) {
+      toast.error('Kunci ImgBB tidak ditemukan di env.')
+      return
+    }
+
     for (let i = 0; i < uploadQueue.length; i++) {
       if (uploadQueue[i].status !== 'IDLE') continue
       if (!uploadQueue[i].title) {
@@ -181,50 +190,31 @@ export default function GallerySettingsPage() {
 
       try {
         const formData = new FormData()
-        formData.append('file', uploadQueue[i].file)
-        formData.append('folder', 'gallery')
+        formData.append('image', uploadQueue[i].file)
 
-        const token = localStorage.getItem('admin_token')
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-
-        const response = await fetch(
-          `${apiUrl}/api/upload/image`,
-          {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`
-            },
-            body: formData
-          }
-        )
+        const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
+          method: 'POST',
+          body: formData
+        })
 
         const uploadRes = await response.json()
-        if (!uploadRes.success) throw new Error(uploadRes.message || 'Upload ke Cloudinary gagal')
+        if (!uploadRes.success) throw new Error(uploadRes.error?.message || 'Upload ke ImgBB gagal')
 
         const imageUrl = uploadRes.data.url
-        const cloudinaryId = uploadRes.data.publicId
+        const cloudinaryId = uploadRes.data.id
 
-        const galleryResponse = await fetch(
-          `${apiUrl}/api/gallery`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-              title: uploadQueue[i].title,
-              description: uploadQueue[i].description || '',
-              category: uploadQueue[i].category || 'Umum',
-              isPublic: uploadQueue[i].isPublic !== false,
-              imageUrl,
-              cloudinaryId
-            })
-          }
-        )
-
-        const galleryData = await galleryResponse.json()
-        if (!galleryData.success) throw new Error(galleryData.message || 'Simpan ke database gagal')
+        // Simpan ke Firestore
+        const docId = Date.now().toString() + Math.random().toString(36).substring(7)
+        await setDoc(doc(db as any, 'gallery', docId), {
+          id: docId,
+          title: uploadQueue[i].title,
+          description: uploadQueue[i].description || '',
+          category: uploadQueue[i].category || 'Umum',
+          isPublic: uploadQueue[i].isPublic !== false,
+          imageUrl,
+          cloudinaryId,
+          createdAt: new Date().toISOString()
+        })
 
         updateQueueItem(i, { status: 'SUCCESS', progress: 100 })
       } catch (err: any) {
@@ -242,19 +232,10 @@ export default function GallerySettingsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Hapus foto ini secara permanen?')) return
     try {
-      const token = localStorage.getItem('admin_token')
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-      const res = await fetch(`${apiUrl}/api/gallery/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      const data = await res.json()
-      if (data.success) {
-        toast.success('Foto dihapus')
-        fetchData()
-      } else {
-        toast.error('Gagal: ' + data.message)
-      }
+      const { deleteDocument } = await import('@/lib/firestore')
+      await deleteDocument('gallery', id)
+      toast.success('Foto dihapus')
+      fetchData()
     } catch (err) {
       toast.error('Gagal menghapus')
     }
@@ -264,24 +245,11 @@ export default function GallerySettingsPage() {
     if (!editingItem) return
     setIsSaving(true)
     try {
-      const token = localStorage.getItem('admin_token')
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-      const res = await fetch(`${apiUrl}/api/gallery/${editingItem.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(editingItem)
-      })
-      const data = await res.json()
-      if (data.success) {
-        toast.success('Data foto diperbarui')
-        setEditingItem(null)
-        fetchData()
-      } else {
-        toast.error('Gagal: ' + data.message)
-      }
+      const { updateDocument } = await import('@/lib/firestore')
+      await updateDocument('gallery', editingItem.id, editingItem)
+      toast.success('Data foto diperbarui')
+      setEditingItem(null)
+      fetchData()
     } catch (err) {
       toast.error('Gagal memperbarui')
     } finally {

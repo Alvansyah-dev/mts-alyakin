@@ -20,43 +20,37 @@ export default function GaleriPage() {
   const [bannerPhoto, setBannerPhoto] = useState<string | null>(null);
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-    fetch(`${apiUrl}/api/settings/homepage`)
-      .then(r => r.json())
-      .then(res => {
-        if (res.success && res.data?.gallery?.backgroundImage) {
-          setBannerPhoto(res.data.gallery.backgroundImage);
+    import('@/lib/firestore').then(({ getSettings }) => {
+      getSettings('home').then(res => {
+        if (res?.gallery?.backgroundImage) {
+          setBannerPhoto(res.gallery.backgroundImage);
         }
-      })
-      .catch(console.error);
+      }).catch(console.error);
+    });
   }, []);
 
   useEffect(() => {
     setLoading(true);
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-    
-    // Construct query parameters
-    const queryParams = new URLSearchParams({
-      limit: '100',
-      isPublic: 'true',
-    });
-    if (category !== 'Semua') {
-      queryParams.append('category', category);
-    }
+    import('@/lib/firestore').then(({ getCollectionData }) => {
+      getCollectionData('gallery').then(data => {
+        if (data && data.length > 0) {
+          let publicData = data.filter((item: any) => item.isPublic !== false);
+          
+          if (category !== 'Semua') {
+            publicData = publicData.filter((item: any) => item.category === category);
+          }
 
-    fetch(`${apiUrl}/api/gallery?${queryParams.toString()}`)
-      .then(r => r.json())
-      .then(res => {
-        if (res.success && res.data && res.data.length > 0) {
-          setData(res.data);
+          // Sort descending by createdAt
+          publicData.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          
+          setData(publicData as Gallery[]);
         } else {
           setData([]);
         }
-      })
-      .catch(() => {
+      }).catch(() => {
         setData([]);
-      })
-      .finally(() => setLoading(false));
+      }).finally(() => setLoading(false));
+    });
   }, [category]);
 
   const openLightbox = (index: number) => {

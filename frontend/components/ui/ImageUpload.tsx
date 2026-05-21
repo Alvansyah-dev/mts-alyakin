@@ -47,21 +47,26 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ name, maxSizeMB = 5, a
   const uploadImage = async () => {
     if (!file) return;
     const form = new FormData();
-    form.append('file', file);
+    form.append('image', file);
     setUploading(true);
-    try {
-      const response = await axios.post('/api/upload/image', form, {
-        onUploadProgress: (p) => {
-          if (p.total) setProgress(Math.round((p.loaded * 100) / p.total));
-        },
-      });
-      // handle response url if needed
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setUploading(false);
-      setProgress(0);
-    }
+      try {
+        const response = await axios.post('/api/upload/image', form, {
+          onUploadProgress: (p) => {
+            if (p.total) setProgress(Math.round((p.loaded * 100) / p.total));
+          },
+        });
+        // On success, set preview to the returned URL and update form value
+        const { url } = response.data;
+        if (url) {
+          setPreview(url);
+          setValue(name, url, { shouldValidate: true });
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setUploading(false);
+        setProgress(0);
+      }
   };
 
   const removeImage = () => {

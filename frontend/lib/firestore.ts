@@ -1,6 +1,8 @@
 import { 
   doc, getDoc, setDoc, onSnapshot,
-  collection, getDocs, query, orderBy
+  collection, getDocs, query, orderBy,
+  addDoc, updateDoc, deleteDoc, where,
+  DocumentData, QueryConstraint
 } from 'firebase/firestore'
 import { db } from './firebase'
 
@@ -65,5 +67,59 @@ export function listenSettings(
   } catch (error) {
     console.error('listenSettings setup error:', error)
     return () => {}
+  }
+}
+
+// --- Generic Collection Operations ---
+
+export async function getCollectionData(collectionName: string, constraints: QueryConstraint[] = []) {
+  if (!db) return [];
+  try {
+    const q = query(collection(db, collectionName), ...constraints);
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error(`Error getting collection ${collectionName}:`, error);
+    return [];
+  }
+}
+
+export async function createDocument(collectionName: string, data: any, customId?: string) {
+  if (!db) return null;
+  try {
+    const payload = { ...data, createdAt: new Date().toISOString() };
+    if (customId) {
+      await setDoc(doc(db, collectionName, customId), payload);
+      return customId;
+    } else {
+      const docRef = await addDoc(collection(db, collectionName), payload);
+      return docRef.id;
+    }
+  } catch (error) {
+    console.error(`Error creating document in ${collectionName}:`, error);
+    return null;
+  }
+}
+
+export async function updateDocument(collectionName: string, docId: string, data: any) {
+  if (!db) return false;
+  try {
+    const payload = { ...data, updatedAt: new Date().toISOString() };
+    await updateDoc(doc(db, collectionName, docId), payload);
+    return true;
+  } catch (error) {
+    console.error(`Error updating document ${docId} in ${collectionName}:`, error);
+    return false;
+  }
+}
+
+export async function deleteDocument(collectionName: string, docId: string) {
+  if (!db) return false;
+  try {
+    await deleteDoc(doc(db, collectionName, docId));
+    return true;
+  } catch (error) {
+    console.error(`Error deleting document ${docId} in ${collectionName}:`, error);
+    return false;
   }
 }

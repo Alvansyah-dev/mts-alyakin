@@ -21,16 +21,19 @@ export default function GalleryPreview({ settings }: { settings?: any }) {
 
   useEffect(() => {
     setMounted(true);
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-    fetch(`${apiUrl}/api/gallery?limit=6&isPublic=true`)
-      .then(r => r.json())
-      .then(res => {
-        if (res.success && res.data && res.data.length > 0) {
-          setData(res.data);
-        }
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    import('@/lib/firestore').then(({ getCollectionData }) => {
+      getCollectionData('gallery')
+        .then(data => {
+          if (data && data.length > 0) {
+            const publicData = data.filter((item: any) => item.isPublic !== false);
+            // Sort by createdAt descending
+            publicData.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            setData(publicData.slice(0, 6) as Gallery[]);
+          }
+        })
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    });
   }, []);
 
   if (!mounted) return null;

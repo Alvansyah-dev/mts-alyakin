@@ -17,16 +17,16 @@ export default function ProfilPage() {
 
   useEffect(() => {
     setMounted(true);
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-    fetch(`${apiUrl}/api/settings/profile`)
-      .then(r => r.json())
-      .then(res => {
-        if (res.success) {
-          setProfile(res.data || null);
-        }
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    import('@/lib/firestore').then(({ getSettings }) => {
+      getSettings('profile')
+        .then(data => {
+          if (data) {
+            setProfile(data);
+          }
+        })
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    });
   }, []);
 
   if (!mounted) return null;

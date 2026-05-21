@@ -28,32 +28,23 @@ export default function ImageUploadField({
 
     setIsUploading(true)
     try {
-      // 1. Upload menggunakan ImgBB (Gratis, Tanpa Kartu Kredit)
-      const imgbbKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
-      if (imgbbKey) {
-        const formData = new FormData();
-        formData.append('image', file);
-        
-        const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
-          method: 'POST',
-          body: formData,
-        });
-        
-        const data = await res.json();
-        if (data.success) {
-          onChange(data.data.url, data.data.id);
-          setIsUploading(false);
-          return;
-        } else {
-          throw new Error(data.error?.message || 'ImgBB upload gagal');
-        }
-      }
+      // Upload via internal API route
+      const formData = new FormData();
+      formData.append('image', file);
       
-      // Jika tidak ada ImgBB Key, beritahu user
-      throw new Error('Kunci ImgBB tidak ditemukan di Vercel/Env. Silakan ikuti panduan chat.');
+      const res = await fetch('/api/upload/image', {
+        method: 'POST',
+        body: formData,
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'ImgBB upload failed')
+      }
+      onChange(data.url, data.publicId)
+      setIsUploading(false)
+      return
       
     } catch (err: any) {
-      console.error('Firebase Storage Error:', err)
       alert(err.message || 'Gagal mengunggah gambar ke Firebase Storage.')
     } finally {
       setIsUploading(false)

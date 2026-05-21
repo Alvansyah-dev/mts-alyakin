@@ -29,7 +29,17 @@ export default function QuestionForm({ onSuccess }: { onSuccess?: () => void }) 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true)
     try {
-      await post('/consultation', data)
+      const { doc, setDoc } = await import('firebase/firestore')
+      const { db } = await import('@/lib/firebase')
+      const docId = Date.now().toString() + Math.random().toString(36).substring(7)
+      await setDoc(doc(db as any, 'consultations', docId), {
+        id: docId,
+        ...data,
+        isModerated: false,
+        isHidden: false,
+        replies: [],
+        createdAt: new Date().toISOString()
+      })
       setSubmitted(true)
       reset()
       onSuccess?.()

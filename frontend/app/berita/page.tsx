@@ -11,6 +11,7 @@ import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import { SkeletonCard } from '@/components/ui/LoadingSkeleton';
 import { News } from '@/types';
+import { getSettings, getCollectionData } from '@/lib/firestore';
 
 const CATEGORIES = ['Semua', 'Akademik', 'Kegiatan', 'Pengumuman', 'Prestasi', 'Umum'];
 
@@ -62,70 +63,54 @@ export default function BeritaPage() {
   const [categories, setCategories] = useState<string[]>(['Semua', 'Akademik', 'Kegiatan', 'Pengumuman', 'Prestasi', 'Umum']);
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-    fetch(`${apiUrl}/api/settings/news_settings`)
-      .then(r => r.json())
-      .then(res => {
-        if (res.success && res.data) {
-          if (res.data.header) {
-            setSettings(res.data);
+    const fetchSettings = async () => {
+      try {
+        const settingsData = await getSettings('news_settings');
+        if (settingsData) {
+          if (settingsData.header) {
+            setSettings(settingsData);
           }
-          if (res.data.categories) {
-            const activeCats = res.data.categories
+          if (settingsData.categories) {
+            const activeCats = settingsData.categories
               .filter((c: any) => c.isActive)
               .map((c: any) => c.name);
             setCategories(['Semua', ...activeCats]);
           }
         }
-      })
-      .catch(err => console.error('Failed to fetch news settings:', err));
+      } catch (err) {
+        console.error('Failed to fetch news settings:', err);
+      }
+    };
+    fetchSettings();
   }, []);
 
   useEffect(() => {
-    setLoading(true);
-    setError(false);
-    
-    // Construct query parameters
-    const queryParams = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-      status: 'PUBLISHED',
-    });
-    if (search.trim()) {
-      queryParams.append('search', search.trim());
-    }
-    if (category !== 'Semua') {
-      queryParams.append('category', category);
-    }
-
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-    fetch(`${apiUrl}/api/news?${queryParams.toString()}`)
-      .then(r => r.json())
-      .then(res => {
-        if (res.success && res.data && res.data.length > 0) {
-          setNewsItems(res.data);
-          setTotalPages(res.pagination?.totalPages || 1);
-        } else {
-          const filtered = DEFAULT_NEWS.filter(item => {
-            const matchesCat = category === 'Semua' || item.category?.toLowerCase() === category.toLowerCase();
-            const matchesSearch = !search.trim() || item.title.toLowerCase().includes(search.toLowerCase()) || item.excerpt?.toLowerCase().includes(search.toLowerCase());
-            return matchesCat && matchesSearch;
-          });
-          setNewsItems(filtered);
-          setTotalPages(Math.ceil(filtered.length / limit) || 1);
-        }
-      })
-      .catch(err => {
-        console.error('Failed to fetch news:', err);
-        const filtered = DEFAULT_NEWS.filter(item => {
+    const fetchNews = async () => {
+      setLoading(true);
+      setError(false);
+      try {
+        const data = await getCollectionData('news');
+        const publishedNews = data.filter((item: any) => item.status === 'PUBLISHED');
+        
+        const filtered = publishedNews.filter((item: any) => {
           const matchesCat = category === 'Semua' || item.category?.toLowerCase() === category.toLowerCase();
           const matchesSearch = !search.trim() || item.title.toLowerCase().includes(search.toLowerCase()) || item.excerpt?.toLowerCase().includes(search.toLowerCase());
           return matchesCat && matchesSearch;
         });
-        setNewsItems(filtered);
+        
+        // Sort by publishedAt descending
+        filtered.sort((a: any, b: any) => new Date(b.publishedAt || b.createdAt).getTime() - new Date(a.publishedAt || a.createdAt).getTime());
+        
+        setNewsItems(filtered as News[]);
         setTotalPages(Math.ceil(filtered.length / limit) || 1);
-      })
-      .finally(() => setLoading(false));
+      } catch (err) {
+        console.error('Failed to fetch news:', err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchNews();
   }, [search, category, page]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {

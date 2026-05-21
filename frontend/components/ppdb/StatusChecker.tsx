@@ -26,15 +26,32 @@ export default function StatusChecker() {
     setResult(null);
 
     try {
-      // Endpoint to check status by noPendaftaran or NISN
-      const res = await get(`/api/ppdb/check/${encodeURIComponent(query.trim())}`);
-      setResult(res.data);
-    } catch (err: any) {
-      if (err.response?.status === 404) {
+      const { collection, query: firestoreQuery, where, getDocs } = await import('firebase/firestore');
+      const { db } = await import('@/lib/firebase');
+      
+      const qNum = firestoreQuery(collection(db as any, 'ppdb'), where('registrationNumber', '==', query.trim()));
+      const qNisn = firestoreQuery(collection(db as any, 'ppdb'), where('nisn', '==', query.trim()));
+
+      let docs = await getDocs(qNum);
+      if (docs.empty) {
+        docs = await getDocs(qNisn);
+      }
+
+      if (docs.empty) {
         setError('Data pendaftaran tidak ditemukan. Pastikan Nomor Pendaftaran atau NISN benar.');
       } else {
-        setError('Terjadi kesalahan saat mengecek status. Silakan coba lagi.');
+        const data = docs.docs[0].data();
+        setResult({
+          noPendaftaran: data.registrationNumber,
+          nisn: data.nisn,
+          namaLengkap: data.namaLengkap,
+          status: data.status,
+          createdAt: data.createdAt,
+          catatan: data.adminNotes
+        } as any);
       }
+    } catch (err: any) {
+      setError('Terjadi kesalahan saat mengecek status. Silakan coba lagi.');
     } finally {
       setLoading(false);
     }

@@ -26,6 +26,8 @@ const DEFAULT_SETTINGS = {
   }
 };
 
+import { getSettings } from '@/lib/firestore';
+
 export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -39,15 +41,17 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-    fetch(`${apiUrl}/api/settings/general`)
-      .then(r => r.json())
-      .then(res => {
-        if (res.success && res.data && res.data.identity) {
-          setSettings(res.data);
+    const fetchSettings = async () => {
+      try {
+        const data = await getSettings('general');
+        if (data && data.identity) {
+          setSettings(data);
         }
-      })
-      .catch(err => console.error('Failed to fetch general settings:', err));
+      } catch (err) {
+        console.error('Failed to fetch general settings:', err);
+      }
+    };
+    fetchSettings();
   }, []);
 
   return (

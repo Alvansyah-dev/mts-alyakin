@@ -21,7 +21,34 @@ import QuestionForm from '@/components/konsultasi/QuestionForm';
 import { Consultation } from '@/types';
 import Button from '@/components/ui/Button';
 
-const fetcher = (url: string) => get(url).then(res => res.data);
+const fetcher = async (url: string) => {
+  const { collection, getDocs, query, where, orderBy, limit } = await import('firebase/firestore');
+  const { db } = await import('@/lib/firebase');
+
+  const searchParams = new URL(url, 'http://localhost').searchParams;
+  const categoryParam = searchParams.get('category');
+  const limitParam = parseInt(searchParams.get('limit') || '10');
+
+  let conditions: any[] = [
+    where('isPublic', '==', true),
+    where('isModerated', '==', true),
+    where('isHidden', '==', false)
+  ];
+
+  if (categoryParam) {
+    conditions.push(where('category', '==', categoryParam));
+  }
+
+  const q = query(
+    collection(db as any, 'consultations'),
+    ...conditions,
+    orderBy('createdAt', 'desc'),
+    limit(limitParam)
+  );
+
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+};
 
 const CATEGORIES = ['Semua', 'Akademik', 'PPDB', 'Fasilitas', 'Umum'];
 
@@ -37,7 +64,7 @@ export default function KonsultasiPage() {
 
   // Real-time fetching every 30 seconds
   const { data: consultations, error, isLoading, mutate } = useSWR<Consultation[]>(
-    mounted ? `/api/consultation?isPublic=true&isModerated=true&isHidden=false&limit=${limit * page}${category !== 'Semua' ? `&category=${category}` : ''}` : null,
+    mounted ? `/api/consultation?isPublic=true&isModerated=true&isHidden=false&limit=${limit * page}${category !== 'Semua' ? `&category=${category}` : ''}` : undefined,
     fetcher,
     { refreshInterval: 30000 }
   );

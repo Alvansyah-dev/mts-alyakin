@@ -90,29 +90,59 @@ export default function RegistrationForm() {
     setErrorMsg('');
 
     try {
-      // In a real implementation, you would upload files to Cloudinary/Firebase Storage first,
-      // get the URLs, and then submit the final JSON to your backend.
-      // For this session, we simulate the submission as requested.
-      
-      const formData = new FormData();
-      Object.keys(data).forEach(key => {
-        if (data[key as keyof FormData] instanceof File) {
-          formData.append(key, data[key as keyof FormData]);
-        } else {
-          formData.append(key, data[key as keyof FormData]);
-        }
-      });
+      const imgbbKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+      if (!imgbbKey) throw new Error('Konfigurasi ImgBB belum diatur');
 
-      const response = await post('/api/ppdb/register', formData);
+      const uploadToImgbb = async (file: File) => {
+        const fd = new FormData();
+        fd.append('image', file);
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
+          method: 'POST',
+          body: fd,
+        });
+        const json = await res.json();
+        if (!json.success) throw new Error('Gagal mengunggah gambar');
+        return json.data.url;
+      };
+
+      const [fotoUrl, ijazahUrl, kkUrl, aktaUrl] = await Promise.all([
+        data.fotoUrl instanceof File ? uploadToImgbb(data.fotoUrl) : data.fotoUrl,
+        data.ijazahUrl instanceof File ? uploadToImgbb(data.ijazahUrl) : data.ijazahUrl,
+        data.kkUrl instanceof File ? uploadToImgbb(data.kkUrl) : data.kkUrl,
+        data.aktaUrl instanceof File ? uploadToImgbb(data.aktaUrl) : data.aktaUrl,
+      ]);
+
+      const { doc, setDoc, getDocs, collection } = await import('firebase/firestore');
+      const { db } = await import('@/lib/firebase');
+
+      // Generate Pendaftaran Number
+      const counterSnap = await getDocs(collection(db as any, 'ppdb'));
+      const count = counterSnap.size + 1;
+      const noPendaftaran = `PPDB${new Date().getFullYear()}${count.toString().padStart(4, '0')}`;
+
+      const docId = Date.now().toString();
+      await setDoc(doc(db as any, 'ppdb', docId), {
+        id: docId,
+        registrationNumber: noPendaftaran,
+        ...data,
+        documents: [
+          { name: 'Pas Foto', url: fotoUrl },
+          { name: 'Ijazah', url: ijazahUrl },
+          { name: 'Kartu Keluarga', url: kkUrl },
+          { name: 'Akta Kelahiran', url: aktaUrl },
+        ],
+        status: 'PENDING',
+        createdAt: new Date().toISOString()
+      });
       
       setSuccessData({
-        noPendaftaran: response.data.data.noPendaftaran,
-        nama: response.data.data.namaLengkap
+        noPendaftaran: noPendaftaran,
+        nama: data.namaLengkap
       });
       setCurrentStep(5); // Success step
       
     } catch (err: any) {
-      setErrorMsg(err.response?.data?.message || 'Terjadi kesalahan saat mendaftar. Silakan coba lagi.');
+      setErrorMsg(err.message || 'Terjadi kesalahan saat mendaftar. Silakan coba lagi.');
     } finally {
       setIsSubmitting(false);
     }

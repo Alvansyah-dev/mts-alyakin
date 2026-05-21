@@ -80,25 +80,29 @@ const DEFAULT_FOOTER: FooterSettings = {
   }
 };
 
+import { getSettings } from '@/lib/firestore';
+
 export default function Footer() {
   const [settings, setSettings] = useState<FooterSettings>(DEFAULT_FOOTER);
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-    fetch(`${apiUrl}/api/settings/footer`)
-      .then(r => r.json())
-      .then(res => {
-        if (res.success && res.data) {
+    const fetchSettings = async () => {
+      try {
+        const data = await getSettings('footer');
+        if (data) {
           setSettings({
-            school: { ...DEFAULT_FOOTER.school, ...res.data.school },
-            contact: { ...DEFAULT_FOOTER.contact, ...res.data.contact },
-            quickLinks: Array.isArray(res.data.quickLinks) ? res.data.quickLinks : DEFAULT_FOOTER.quickLinks,
-            operatingHours: Array.isArray(res.data.operatingHours) ? res.data.operatingHours : DEFAULT_FOOTER.operatingHours,
-            other: { ...DEFAULT_FOOTER.other, ...res.data.other }
+            school: { ...DEFAULT_FOOTER.school, ...data.school },
+            contact: { ...DEFAULT_FOOTER.contact, ...data.contact },
+            quickLinks: Array.isArray(data.quickLinks) ? data.quickLinks : DEFAULT_FOOTER.quickLinks,
+            operatingHours: Array.isArray(data.operatingHours) ? data.operatingHours : DEFAULT_FOOTER.operatingHours,
+            other: { ...DEFAULT_FOOTER.other, ...data.other }
           });
         }
-      })
-      .catch(err => console.error('Failed to fetch footer settings:', err));
+      } catch (err) {
+        console.error('Failed to fetch footer settings:', err);
+      }
+    };
+    fetchSettings();
   }, []);
 
   const scrollToTop = () => {

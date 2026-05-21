@@ -17,13 +17,12 @@ export const metadata: Metadata = {
   description: 'Selamat Datang di MTs Al-Yakin, sekolah Islam modern.',
 };
 
+import { getSettings } from '@/lib/firestore';
+
 async function getHomeSettings() {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-    const res = await fetch(`${apiUrl}/api/settings/homepage`, { cache: 'no-store' });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.success ? data.data : null;
+    const data = await getSettings('homepage');
+    return data || null;
   } catch (error) {
     console.error('Failed to fetch home settings:', error);
     return null;

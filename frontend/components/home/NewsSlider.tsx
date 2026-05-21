@@ -25,16 +25,19 @@ export default function NewsSlider({ settings }: { settings?: any }) {
 
   useEffect(() => {
     setMounted(true);
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-    fetch(`${apiUrl}/api/news?limit=6&status=PUBLISHED`)
-      .then(r => r.json())
-      .then(res => {
-        if (res.success && res.data && res.data.length > 0) {
-          setData(res.data);
-        }
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    import('@/lib/firestore').then(({ getCollectionData }) => {
+      getCollectionData('news')
+        .then(data => {
+          if (data && data.length > 0) {
+            const published = data.filter((item: any) => item.status === 'PUBLISHED');
+            // Sort by publishedAt descending
+            published.sort((a: any, b: any) => new Date(b.publishedAt || b.createdAt).getTime() - new Date(a.publishedAt || a.createdAt).getTime());
+            setData(published.slice(0, 6) as News[]);
+          }
+        })
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    });
   }, []);
 
   const nextSlide = () => {

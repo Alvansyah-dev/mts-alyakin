@@ -81,22 +81,9 @@ export default function WebsiteSettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      // 1. Try Firestore first
       const fsData = await getSettings('general');
-      let fetched = fsData;
-
-      // 2. Fallback to API if Firestore is empty
-      if (!fetched) {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-        const response = await fetch(`${apiUrl}/api/settings/general`)
-        const data = await response.json()
-        if (data && data.success) {
-          fetched = data.data || DEFAULT_SETTINGS
-        }
-      }
-
-      if (fetched) {
-        setSettings(fetched as any)
+      if (fsData) {
+        setSettings(fsData as any)
       }
     } catch (err) {
       console.error('Failed to fetch website settings:', err)

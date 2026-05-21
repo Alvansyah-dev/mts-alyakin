@@ -123,24 +123,16 @@ export default function PpdbSettingsPage() {
   const fetchData = async () => {
     setIsLoading(true)
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-      const token = localStorage.getItem('admin_token')
+      const { getSettings, getCollectionData } = await import('@/lib/firestore')
       
-      const [settingsRes, applicantsRes] = await Promise.all([
-        fetch(`${apiUrl}/api/settings/ppdb`),
-        fetch(`${apiUrl}/api/ppdb`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
-      ])
+      const settingsData = await getSettings('ppdb')
+      const applicantsData = await getCollectionData('ppdb')
       
-      const settingsData = await settingsRes.json()
-      const applicantsData = await applicantsRes.json()
-      
-      if (settingsData && settingsData.success) {
-        setSettings(settingsData.data || DEFAULT_SETTINGS)
+      if (settingsData) {
+        setSettings(settingsData as any)
       }
-      if (applicantsData && applicantsData.success) {
-        setPendaftarList(applicantsData.data || [])
+      if (applicantsData) {
+        setPendaftarList(applicantsData as Pendaftar[])
       }
     } catch (err) {
       console.error('Failed to fetch data:', err)
@@ -200,27 +192,14 @@ export default function PpdbSettingsPage() {
     if (!selectedPendaftar) return
     setIsSaving(true)
     try {
-      const token = localStorage.getItem('admin_token')
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-      const res = await fetch(`${apiUrl}/api/ppdb/${selectedPendaftar.id}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          status: selectedPendaftar.status,
-          adminNotes: selectedPendaftar.adminNotes
-        })
+      const { updateDocument } = await import('@/lib/firestore')
+      await updateDocument('ppdb', selectedPendaftar.id, {
+        status: selectedPendaftar.status,
+        adminNotes: selectedPendaftar.adminNotes
       })
-      const data = await res.json()
-      if (data.success) {
-        toast.success('Status pendaftar berhasil diperbarui')
-        setSelectedPendaftar(null)
-        fetchData()
-      } else {
-        toast.error('Gagal: ' + data.message)
-      }
+      toast.success('Status pendaftar berhasil diperbarui')
+      setSelectedPendaftar(null)
+      fetchData()
     } catch (err) {
       toast.error('Gagal memperbarui status')
     } finally {

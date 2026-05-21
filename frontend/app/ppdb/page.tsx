@@ -25,7 +25,13 @@ import RegistrationForm from '@/components/ppdb/RegistrationForm';
 import StatusChecker from '@/components/ppdb/StatusChecker';
 import { get } from '@/lib/api';
 
-const fetcher = (url: string) => get(url).then(res => res?.data || res);
+const fetcher = async (url: string) => {
+  if (url === '/api/settings/ppdb') {
+    const { getSettings } = await import('@/lib/firestore');
+    return getSettings('ppdb');
+  }
+  return get(url).then(res => res?.data || res);
+};
 
 const DEFAULT_STEPS = [
   { icon: '📝', title: 'Lengkapi Data', description: 'Isi formulir pendaftaran online dengan data yang benar.' },

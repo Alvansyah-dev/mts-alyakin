@@ -61,17 +61,15 @@ export default function StatsSection({ settings }: { settings?: any }) {
 
   useEffect(() => {
     // Coba fetch dari API, kalau gagal pakai default
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-    fetch(`${apiUrl}/api/settings/homepage`)
-      .then(r => r.json())
-      .then(data => {
-        if (data?.data?.stats && Array.isArray(data.data.stats)) {
-          setStats(data.data.stats);
-        }
-      })
-      .catch(() => {
-        // Diam-diam pakai default, tidak error
-      });
+    import('@/lib/firestore').then(({ getSettings }) => {
+      getSettings('homepage')
+        .then(data => {
+          if (data?.stats && Array.isArray(data.stats)) {
+            setStats(data.stats);
+          }
+        })
+        .catch(() => {});
+    });
   }, []);
 
   return (

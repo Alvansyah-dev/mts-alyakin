@@ -32,7 +32,7 @@ import SectionCard from '@/components/admin/SectionCard'
 import TabNav from '@/components/admin/TabNav'
 import ListEditor from '@/components/admin/ListEditor'
 import ImageUploadField from '@/components/admin/ImageUploadField'
-import { get, put, post, del } from '@/lib/api'
+import { getSettings, saveSettings, getCollectionData, createDocument, updateDocument, deleteDocument } from '@/lib/firestore'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/utils'
 
@@ -119,27 +119,19 @@ export default function BeritaSettingsPage() {
   const fetchInitialData = async () => {
     setIsLoading(true)
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-      const token = localStorage.getItem('admin_token')
-      
-      const [settingsRes, newsRes] = await Promise.all([
-        fetch(`${apiUrl}/api/settings/news_settings`),
-        fetch(`${apiUrl}/api/news?limit=50`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
+      const [settingsData, newsData] = await Promise.all([
+        getSettings('news_settings'),
+        getCollectionData('news')
       ])
       
-      const settingsData = await settingsRes.json()
-      const newsData = await newsRes.json()
-      
-      if (settingsData && settingsData.success && settingsData.data) {
-        setSettings(settingsData.data || DEFAULT_SETTINGS)
-        if (settingsData.data.categories) {
-          setCategories(settingsData.data.categories)
+      if (settingsData) {
+        setSettings(settingsData as BeritaSettings)
+        if (settingsData.categories) {
+          setCategories(settingsData.categories)
         }
       }
-      if (newsData && newsData.success) {
-        setNews(newsData.data || [])
+      if (newsData) {
+        setNews(newsData as NewsArticle[])
       }
     } catch (err) {
       console.error('Failed to fetch initial data:', err)
@@ -150,21 +142,8 @@ export default function BeritaSettingsPage() {
 
   const fetchBerita = async () => {
     try {
-      const token = localStorage.getItem('admin_token')
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-      
-      const res = await fetch(
-        `${apiUrl}/api/news?limit=50`,
-        {
-          headers: { 
-            'Authorization': `Bearer ${token}` 
-          }
-        }
-      )
-      const data = await res.json()
-      if (data.success) {
-        setNews(data.data || [])
-      }
+      const data = await getCollectionData('news')
+      setNews(data as NewsArticle[])
     } catch (err) {
       console.error(err)
     }
@@ -173,31 +152,15 @@ export default function BeritaSettingsPage() {
   const handleSaveSettings = async (customSettings?: any) => {
     setIsSaving(true)
     try {
-      const token = localStorage.getItem('admin_token')
-      if (!token) {
-        alert('Sesi habis. Silakan login ulang.')
-        window.location.href = '/admin/login'
-        return
-      }
-      
       const payload = customSettings || settings
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-      const res = await fetch(`${apiUrl}/api/settings/news_settings`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
-      })
+      const success = await saveSettings('news_settings', payload)
       
-      const data = await res.json()
-      if (data.success) {
+      if (success) {
         setIsDirty(false)
         setLastSaved(new Date())
         toast.success('Pengaturan berita berhasil disimpan!')
       } else {
-        toast.error('Gagal menyimpan: ' + data.message)
+        toast.error('Gagal menyimpan ke Firestore')
       }
     } catch (err: any) {
       toast.error('Error koneksi: ' + err.message)
@@ -212,58 +175,36 @@ export default function BeritaSettingsPage() {
       return
     }
 
-    const token = localStorage.getItem('admin_token')
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL 
-      || 'http://localhost:5000'
-    
-    console.log('Saving berita...')
-    console.log('Token exists:', !!token)
-    console.log('API URL:', apiUrl)
-    console.log('Form data:', formData)
-    
-    if (!token) {
-      alert('Token tidak ada! Silakan login ulang.')
-      window.location.href = '/admin/login'
-      return
-    }
-
     setIsSaving(true)
     try {
       const payload = {
         title: formData.title,
-        slug: formData.slug || '',
+        slug: formData.slug || generateSlug(formData.title),
         content: formData.content || '',
         excerpt: formData.excerpt || '',
         thumbnail: formData.thumbnail || '',
         cloudinaryId: formData.cloudinaryId || '',
         category: formData.category || 'UMUM',
         status: isDraft ? 'DRAFT' : 'PUBLISHED',
+        author: formData.author || 'Admin',
+        publishedAt: formData.publishedAt || new Date().toISOString()
       }
       
       const isEdit = !!formData.id
-      const url = isEdit 
-        ? `${apiUrl}/api/news/${formData.id}`
-        : `${apiUrl}/api/news`
-      const method = isEdit ? 'PUT' : 'POST'
+      let success = false
+      if (isEdit) {
+        success = await updateDocument('news', formData.id, payload)
+      } else {
+        const id = await createDocument('news', payload)
+        success = !!id
+      }
       
-      const res = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
-      })
-      
-      const data = await res.json()
-      console.log('Save response:', data)
-      
-      if (data.success) {
+      if (success) {
         alert(isDraft ? 'Draft disimpan!' : 'Berita dipublikasikan!')
         setEditingNews(null)
         fetchBerita() // refresh list
       } else {
-        alert('Gagal: ' + (data.message || 'Unknown error'))
+        alert('Gagal menyimpan berita.')
       }
     } catch (err: any) {
       alert('Error: ' + err.message)
@@ -275,19 +216,12 @@ export default function BeritaSettingsPage() {
   const handleDeleteNews = async (id: string) => {
     if (!confirm('Hapus berita ini?')) return
     try {
-      const token = localStorage.getItem('admin_token')
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-      
-      const res = await fetch(`${apiUrl}/api/news/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      const data = await res.json()
-      if (data.success) {
+      const success = await deleteDocument('news', id)
+      if (success) {
         toast.success('Berita berhasil dihapus!')
         fetchBerita()
       } else {
-        toast.error('Gagal: ' + data.message)
+        toast.error('Gagal menghapus berita.')
       }
     } catch (err: any) {
       toast.error('Error: ' + err.message)
@@ -296,28 +230,18 @@ export default function BeritaSettingsPage() {
 
   const toggleNewsStatus = async (item: NewsArticle) => {
     try {
-      const token = localStorage.getItem('admin_token')
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
       const newStatus = item.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED'
       
-      const res = await fetch(`${apiUrl}/api/news/${item.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ 
-          status: newStatus,
-          publishedAt: newStatus === 'PUBLISHED' 
-            ? new Date().toISOString() : null
-        })
+      const success = await updateDocument('news', item.id, { 
+        status: newStatus,
+        publishedAt: newStatus === 'PUBLISHED' 
+          ? new Date().toISOString() : null
       })
-      const data = await res.json()
-      if (data.success) {
+      if (success) {
         toast.success(`Status diubah menjadi ${newStatus}`)
         fetchBerita()
       } else {
-        toast.error('Gagal: ' + data.message)
+        toast.error('Gagal mengubah status.')
       }
     } catch (err: any) {
       toast.error('Error: ' + err.message)
@@ -326,22 +250,12 @@ export default function BeritaSettingsPage() {
 
   const toggleFeatured = async (item: NewsArticle) => {
     try {
-      const token = localStorage.getItem('admin_token')
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-      const res = await fetch(`${apiUrl}/api/news/${item.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ isFeatured: !item.isFeatured })
-      })
-      const data = await res.json()
-      if (data.success) {
+      const success = await updateDocument('news', item.id, { isFeatured: !item.isFeatured })
+      if (success) {
         toast.success(`Featured ${item.isFeatured ? 'dihapus' : 'ditetapkan'}!`)
         fetchBerita()
       } else {
-        toast.error('Gagal: ' + data.message)
+        toast.error('Gagal mengatur featured.')
       }
     } catch (err: any) {
       toast.error('Error: ' + err.message)
