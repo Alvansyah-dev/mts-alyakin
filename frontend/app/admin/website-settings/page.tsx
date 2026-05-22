@@ -1,100 +1,82 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { 
-  Globe, 
-  Search, 
-  Palette, 
-  Type, 
-  Layout, 
-  CheckCircle2, 
-  Settings, 
-  BarChart3, 
-  Link as LinkIcon, 
-  ImageIcon, 
-  MousePointer2,
-  AlertCircle,
-  Eye,
-  Info
-} from 'lucide-react'
+import { Globe, Search, Palette, Type, Layout, CheckCircle2, Settings, BarChart3, Link as LinkIcon, ImageIcon, MousePointer2, AlertCircle, Eye, Info } from 'lucide-react'
 import EditorLayout from '@/components/admin/EditorLayout'
 import SectionCard from '@/components/admin/SectionCard'
 import TabNav from '@/components/admin/TabNav'
 import ImageUploadField from '@/components/admin/ImageUploadField'
-import { get, put } from '@/lib/api'
+import { getAuth } from 'firebase/auth'
+import { getSettings } from '@/lib/firestore'
 import { toast } from 'sonner'
-import { getSettings, saveSettings } from '@/lib/firestore'
 
-// --- Interfaces ---
-
-interface WebsiteSettings {
+export interface WebsiteSettings {
   identity: {
-    siteName: string
-    tagline: string
-    logoUrl?: string
-    faviconUrl?: string
-  }
+    siteName: string;
+    tagline: string;
+    logoUrl?: string;
+    faviconUrl?: string;
+  };
   seo: {
-    metaDescription: string
-    keywords: string
-    googleAnalyticsId: string
-    productionUrl: string
-  }
+    metaDescription: string;
+    keywords: string;
+    googleAnalyticsId: string;
+    productionUrl: string;
+  };
   appearance: {
-    primaryColor: string
-    headingFont: string
-    bodyFont: string
-  }
+    primaryColor: string;
+    headingFont: string;
+    bodyFont: string;
+  };
 }
-
-// --- Defaults ---
 
 const DEFAULT_SETTINGS: WebsiteSettings = {
   identity: {
     siteName: 'MTs Al-Yakin',
     tagline: 'Mencetak Generasi Unggul dan Berakhlak Mulia',
     logoUrl: '',
-    faviconUrl: ''
+    faviconUrl: '',
   },
   seo: {
     metaDescription: 'Website resmi MTs Al-Yakin. Informasi pendaftaran siswa baru (PPDB), berita sekolah, galeri kegiatan, dan layanan konsultasi online.',
     keywords: 'mts al-yakin, sekolah malang, madrasah tsanawiyah, ppdb 2024',
     googleAnalyticsId: 'G-XXXXXXXXXX',
-    productionUrl: 'https://mtsalyakin.sch.id'
+    productionUrl: 'https://mtsalyakin.sch.id',
   },
   appearance: {
     primaryColor: '#059669', // Emerald 600
     headingFont: 'Inter',
-    bodyFont: 'Inter'
-  }
-}
+    bodyFont: 'Inter',
+  },
+};
 
 export default function WebsiteSettingsPage() {
-  const [settings, setSettings] = useState<WebsiteSettings>(DEFAULT_SETTINGS)
-  const [activeTab, setActiveTab] = useState('identity')
-  const [isSaving, setIsSaving] = useState(false)
-  const [isDirty, setIsDirty] = useState(false)
-
-  useEffect(() => {
-    fetchSettings()
-  }, [])
+  const [settings, setSettings] = useState<WebsiteSettings>(DEFAULT_SETTINGS);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [activeTab, setActiveTab] = useState('identity');
 
   const fetchSettings = async () => {
     try {
       const fsData = await getSettings('general');
       if (fsData) {
-        setSettings(fsData as any)
+        setSettings(fsData as WebsiteSettings);
       }
     } catch (err) {
-      console.error('Failed to fetch website settings:', err)
+      console.error('Failed to fetch website settings:', err);
     }
-  }
+  };
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
 
   const handleSave = async () => {
     setIsSaving(true)
     try {
       // Verify admin session via Firebase Auth
-      const adminUser = await getAdminUser();
+      const auth = getAuth();
+const adminUser = auth.currentUser;
       if (!adminUser) {
         toast.error('Sesi habis. Silakan login ulang.');
         setTimeout(() => {

@@ -18,6 +18,7 @@ import SectionCard from '@/components/admin/SectionCard'
 import { get, put } from '@/lib/api'
 import { toast } from 'sonner'
 import { getSettings, saveSettings } from '@/lib/firestore'
+import { getAdminUser } from '@/lib/auth'
 
 // --- Interfaces ---
 
